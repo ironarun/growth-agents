@@ -1,0 +1,87 @@
+{
+  "product": {
+    "name": "Verbatim",
+    "tagline": "A.I. JUST GOT A BULLSHIT METER.",
+    "description": "Chrome extension that pressure-tests AI responses across multiple models via multi-model debate.",
+    "url": "https://helloverbatim.com",
+    "feature": "Debate"
+  },
+  "audience": {
+    "label": "Independent and boutique consultants",
+    "jobTitles": [
+      "Consultant",
+      "Management Consultant",
+      "Strategy Consultant",
+      "Independent Consultant",
+      "Principal Consultant"
+    ],
+    "employers": [
+      "Big 4",
+      "McKinsey",
+      "BCG",
+      "Bain",
+      "consulting (employer keyword, catches boutiques)"
+    ],
+    "interests": [
+      "Harvard Business Review",
+      "McKinsey Insights",
+      "Bain Insights",
+      "Strategy+Business",
+      "Substack business writers"
+    ],
+    "behaviors": [
+      "ChatGPT Plus subscriber",
+      "Claude Pro subscriber",
+      "business software buyer"
+    ]
+  },
+  "primaryHook": {
+    "id": "hook-6",
+    "text": "You don't know what you're missing. Find out before it costs you."
+  },
+  "secondaryHook": {
+    "id": "hook-4",
+    "text": "You don't always have someone to push back. AI never does."
+  },
+  "bodyCopyOptions": [
+    "You read the AI's answer. It sounds right. Then a second voice in your head asks if it actually is. Verbatim is the second voice, on demand, before the deliverable goes out.",
+    "The AI sounds confident. You aren't, not all the way. One click sends the answer to three other models and shows you exactly where they disagree.",
+    "Your reputation is the deliverable. Verbatim pressure-tests every AI conclusion against other models, in one click, before you send it.",
+    "Confidence is not correctness. Verbatim is the difference, in one click, without leaving the page."
+  ],
+  "visualTreatments": [
+    {
+      "id": "clean-editorial",
+      "name": "Clean editorial",
+      "description": "White background, single hero quote in large editorial type, Verbatim pink accent, small wordmark."
+    },
+    {
+      "id": "bold-all-type",
+      "name": "Bold all-type",
+      "description": "Hook text fills the frame, no imagery, high contrast, black on white or white on pink."
+    },
+    {
+      "id": "contrarian",
+      "name": "Contrarian",
+      "description": "Red, black, and white. Aggressive. BULLSHIT METER framing pushed to the front."
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "description": "Lots of whitespace, small wordmark, sub-hook in lowercase, no decoration."
+    },
+    {
+      "id": "screenshot-mock",
+      "name": "Screenshot mock",
+      "description": "Mocked product screenshot of the Debate panel surfacing a real model disagreement."
+    }
+  ],
+  "brand": {
+    "primaryColor": "#F12258",
+    "lightPinkSurface": "#FFF0F2",
+    "wordmark": "Verbatim",
+    "voice": "Direct, adult-to-adult, slightly contrarian. No em dashes. No 'leverage', 'transform', 'revolutionize', or 'AI-powered'.",
+    "site": "helloverbatim.com"
+  },
+  "outputCount": 10
+}
