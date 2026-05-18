@@ -1,0 +1,39 @@
+{
+  "product": {
+    "name": "Verbatim",
+    "description": "Chrome extension that helps users pressure-test important AI responses before relying on them.",
+    "wedge": "Pressure-test AI conclusions before sending client-facing work.",
+    "featureFocus": "Debate"
+  },
+  "audience": "Independent and boutique consultants",
+  "primaryHook": "You don't know what you're missing. Find out before it costs you.",
+  "secondaryHook": "You don't always have someone to push back. AI never does.",
+  "bodyCopyOptions": [
+  "You are reading an AI response. It sounds right. Then your confidence dips. Verbatim is what you do next.",
+  "Before a client sees the conclusion, pressure-test the answer. Verbatim shows what may be missing, overstated, or under-examined.",
+  "The problem is not that AI is always wrong. The problem is not knowing when to doubt it. Verbatim gives you a second pass before the work leaves your hands."
+  ],
+  "visualTreatments": [
+    "clean editorial",
+    "bold all-type",
+    "contrarian",
+    "minimal",
+    "screenshot-mock"
+  ],
+  "brand": {
+    "name": "Verbatim",
+    "primaryColor": "#F12258",
+    "surfaceColor": "#FFF0F2",
+    "voice": "direct, skeptical, adult-to-adult",
+    "brandLine": "A.I. JUST GOT A BULLSHIT METER.",
+    "avoidWords": [
+      "leverage",
+      "transform",
+      "revolutionize",
+      "AI-powered",
+      "unlock",
+      "seamless"
+    ]
+  },
+  "outputCount": 10
+}
