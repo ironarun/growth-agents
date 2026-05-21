@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate:creative": "tsx agents/paid-ads/skills/creative-generator/index.ts"
+    "generate:creative": "tsx agents/paid-ads/skills/creative-generator/index.ts",
+    "scout:conversations": "tsx agents/conversation-scout/index.ts"
   },
   "keywords": [],
   "author": "",

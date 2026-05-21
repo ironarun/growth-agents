@@ -1,0 +1,80 @@
+[
+  {
+    "id": "linkedin-claude-codex-001",
+    "platform": "LinkedIn",
+    "url": "https://www.linkedin.com/feed/update/sample-claude-codex-001",
+    "author": "Maya Singh",
+    "authorRole": "Founder, devtools startup",
+    "postText": "We tested Claude Code and Codex on the same repo this week. The interesting difference was not raw coding ability. It was how each agent handled repo context, docs, and small-step discipline after the first implementation.",
+    "topic": "Claude Code vs Codex",
+    "technicalDepth": "medium",
+    "suggestedProfile": "arun",
+    "observedAudience": "Founders, engineering leaders, AI tooling builders",
+    "whyItMightMatter": "Directly overlaps with the current controlled comparison between Claude, Claude Code, ChatGPT, and Codex as build partners."
+  },
+  {
+    "id": "linkedin-agent-memory-002",
+    "platform": "LinkedIn",
+    "url": "https://www.linkedin.com/feed/update/sample-agent-memory-002",
+    "author": "Daniel Cho",
+    "authorRole": "Fractional CTO",
+    "postText": "The next frontier for AI coding agents is memory. Not chat history. Project memory. The agent needs to know what the repo is trying to become, what not to build, and what decisions were already made.",
+    "topic": "agent memory/context",
+    "technicalDepth": "medium",
+    "suggestedProfile": "arun",
+    "observedAudience": "Fractional CTOs, consultants, founders using coding agents",
+    "whyItMightMatter": "Strong fit for the repo-as-memory thesis and the build-partner rubric."
+  },
+  {
+    "id": "substack-founders-ai-tools-003",
+    "platform": "Substack Notes",
+    "url": "https://substack.com/@sample/note/founders-ai-tools-003",
+    "author": "Elena Brooks",
+    "authorRole": "Solo founder writing about AI workflows",
+    "postText": "Most founders I know are not trying to replace engineers with AI. They are trying to reduce the delay between seeing a problem and testing a fix. The workflow matters more than the model leaderboard.",
+    "topic": "founders using AI tools",
+    "technicalDepth": "low",
+    "suggestedProfile": "arun",
+    "observedAudience": "Solo founders, indie hackers, AI workflow readers",
+    "whyItMightMatter": "Good opening for Arun's practical build-partner framing without sounding like a model debate."
+  },
+  {
+    "id": "substack-notes-distribution-004",
+    "platform": "Substack Notes",
+    "url": "https://substack.com/@sample/note/substack-notes-distribution-004",
+    "author": "Priya Raman",
+    "authorRole": "Newsletter operator",
+    "postText": "Substack Notes still feels underpriced for distribution if you are willing to join specific conversations instead of posting generic threads. The trick is finding the right posts before everyone piles in.",
+    "topic": "Substack/Notes distribution",
+    "technicalDepth": "low",
+    "suggestedProfile": "model-citizen",
+    "observedAudience": "Newsletter writers, founders, consultants",
+    "whyItMightMatter": "Matches the Conversation Scout use case: finding manual-input conversations worth joining."
+  },
+  {
+    "id": "hn-agent-runtime-005",
+    "platform": "Hacker News",
+    "url": "https://news.ycombinator.com/item?id=sample-agent-runtime-005",
+    "author": "throwaway-runtime",
+    "authorRole": "Developer commenter",
+    "postText": "The benchmark is meaningless unless you control for repo graph traversal, AST-level edit locality, context window eviction, deterministic tool sandboxing, and post-hoc diff repair. Otherwise you are measuring prompt luck and calling it agency.",
+    "topic": "AI coding agents",
+    "technicalDepth": "high",
+    "suggestedProfile": "unknown",
+    "observedAudience": "Systems programmers, AI tooling skeptics, HN developer audience",
+    "whyItMightMatter": "Useful to monitor for technical objections, but too implementation-specific for Arun unless reframed around workflow or product risk."
+  },
+  {
+    "id": "linkedin-verbatim-client-risk-006",
+    "platform": "LinkedIn",
+    "url": "https://www.linkedin.com/feed/update/sample-verbatim-client-risk-006",
+    "author": "Rachel Kim",
+    "authorRole": "Independent strategy consultant",
+    "postText": "I use AI every day for client work, but the scary part is not hallucinations in the abstract. It is the confident paragraph that sounds right until a client catches the missing assumption.",
+    "topic": "founders using AI tools",
+    "technicalDepth": "low",
+    "suggestedProfile": "verbatim",
+    "observedAudience": "Consultants, AI-using operators, client-service founders",
+    "whyItMightMatter": "Strong Verbatim wedge: pressure-test AI conclusions before client-facing work."
+  }
+]
