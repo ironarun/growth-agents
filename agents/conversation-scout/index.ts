@@ -45,6 +45,23 @@ interface ScoreSummary {
   credibilityRisk: number;
 }
 
+interface PainMemoryEntry {
+  id: string;
+  sourcePostId: string;
+  platform: Platform;
+  topic: string;
+  selectedProfile: Profile['profileId'];
+  audience: string;
+  painPoint: string;
+  audienceLanguage: string;
+  objection: string;
+  emotionalTrigger: string;
+  creativeAngle: string;
+  suggestedTemplateUse: string;
+  confidence: 'low' | 'medium' | 'high';
+  notes: string;
+}
+
 interface ProfileRoute {
   profile: Profile;
   whyProfileFits: string;
@@ -55,6 +72,7 @@ interface ReviewItem {
   route: ProfileRoute;
   scores: ScoreSummary;
   whyWorthEngaging: string;
+  painMemory: PainMemoryEntry;
   draftReply: string;
   riskNote: string;
   recommendedAction: RecommendedAction;
@@ -286,6 +304,136 @@ function createDraftReply(seed: SeedPost, route: ProfileRoute, action: Recommend
   return 'The useful question is what breaks when this leaves the screenshot and hits a real workflow. That is usually where the product starts telling the truth.';
 }
 
+function confidenceFromScores(scores: ScoreSummary): PainMemoryEntry['confidence'] {
+  const signalScore = scores.relevance + scores.comprehensionFit - scores.credibilityRisk;
+
+  if (signalScore >= 7) {
+    return 'high';
+  }
+
+  if (signalScore >= 4) {
+    return 'medium';
+  }
+
+  return 'low';
+}
+
+function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSummary): PainMemoryEntry {
+  const text = `${seed.topic} ${seed.postText} ${seed.whyItMightMatter}`.toLowerCase();
+  const topic = seed.topic.toLowerCase();
+  const base = {
+    id: `pain-${seed.id}`,
+    sourcePostId: seed.id,
+    platform: seed.platform,
+    topic: seed.topic,
+    selectedProfile: route.profile.profileId,
+    audience: seed.observedAudience,
+    confidence: confidenceFromScores(scores),
+  };
+
+  if (seed.technicalDepth === 'high' || seed.platform === 'Hacker News') {
+    return {
+      ...base,
+      painPoint: 'Technical audiences distrust AI agent claims when benchmarks ignore real engineering constraints.',
+      audienceLanguage: 'repo graph traversal, AST-level edit locality, context window eviction, deterministic tool sandboxing',
+      objection: 'This is prompt luck dressed up as agency unless the evaluation controls for real repo behavior.',
+      emotionalTrigger: 'Skepticism toward inflated agent demos and benchmark theater.',
+      creativeAngle: 'Do not sell autonomy to technical audiences before proving the workflow survives real repo constraints.',
+      suggestedTemplateUse: 'Technical objection memory, product risk notes, observe-only HN research.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (route.profile.profileId === 'verbatim') {
+    return {
+      ...base,
+      painPoint: 'AI output can sound client-ready while hiding a missing assumption.',
+      audienceLanguage: 'confident paragraph, sounds right, client catches the missing assumption',
+      objection: 'I already review AI work myself, but I may miss the confident wrong paragraph.',
+      emotionalTrigger: 'Reputational risk in front of a client.',
+      creativeAngle: 'Confidence is not correctness. Pressure-test the conclusion before it reaches the client.',
+      suggestedTemplateUse: 'Verbatim consultant risk ad, client-facing deliverable hook, Debate feature proof.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (includesAny(topic, ['memory', 'context'])) {
+    return {
+      ...base,
+      painPoint: 'Agents lose usefulness when project memory lives in chat instead of durable repo context.',
+      audienceLanguage: 'project memory, repo context, what not to build, decisions already made',
+      objection: 'The model can remember enough if the prompt is good.',
+      emotionalTrigger: 'Fear of confident rework and repeated context loss.',
+      creativeAngle: 'Repo memory beats chat memory because it preserves decisions and constraints.',
+      suggestedTemplateUse: 'Founder workflow post, build-partner rubric content, agent memory explainer.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (includesAny(text, ['benchmark', 'claude', 'codex', 'coding agent'])) {
+    return {
+      ...base,
+      painPoint: 'Model comparisons get noisy when they ignore workflow quality and cleanup cost.',
+      audienceLanguage: 'same repo, raw coding ability, small-step discipline, benchmark',
+      objection: 'The smartest model should win regardless of process.',
+      emotionalTrigger: 'Frustration with fake certainty from model leaderboards.',
+      creativeAngle: 'The useful benchmark is which workflow leaves less wreckage after the first pass.',
+      suggestedTemplateUse: 'Arun founder post, comparison thread reply, GTM engine build log.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (includesAny(text, ['project memory', 'repo memory', 'chat memory'])) {
+    return {
+      ...base,
+      painPoint: 'Agents lose usefulness when project memory lives in chat instead of durable repo context.',
+      audienceLanguage: 'project memory, repo context, what not to build, decisions already made',
+      objection: 'The model can remember enough if the prompt is good.',
+      emotionalTrigger: 'Fear of confident rework and repeated context loss.',
+      creativeAngle: 'Repo memory beats chat memory because it preserves decisions and constraints.',
+      suggestedTemplateUse: 'Founder workflow post, build-partner rubric content, agent memory explainer.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (includesAny(text, ['substack', 'notes', 'distribution', 'broadcast'])) {
+    return {
+      ...base,
+      painPoint: 'Distribution fails when founders broadcast instead of joining specific conversations early.',
+      audienceLanguage: 'specific conversations, before everyone piles in, not generic threads',
+      objection: 'Posting more should be enough to create reach.',
+      emotionalTrigger: 'Anxiety about shouting into the feed and getting nothing back.',
+      creativeAngle: 'Conversation is not broadcasting. Find the thread before it turns generic.',
+      suggestedTemplateUse: 'Conversation Scout positioning, Substack Notes post, Model Citizen distribution bit.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  if (includesAny(text, ['founder', 'workflow', 'replace engineers'])) {
+    return {
+      ...base,
+      painPoint: 'Founders want AI tools to reduce delay between noticing a problem and testing a fix.',
+      audienceLanguage: 'reduce the delay, testing a fix, workflow matters more than the leaderboard',
+      objection: 'AI workflows are mainly about replacing people.',
+      emotionalTrigger: 'Impatience with slow execution loops.',
+      creativeAngle: 'The win is not replacement. It is a shorter loop from problem to tested fix.',
+      suggestedTemplateUse: 'Founder workflow essay, Arun reply template, GTM engine thesis content.',
+      notes: `Source evidence: ${seed.postText}`,
+    };
+  }
+
+  return {
+    ...base,
+    painPoint: 'The post may contain useful audience language, but the pain point needs human review.',
+    audienceLanguage: seed.topic,
+    objection: 'Unclear from the seed post.',
+    emotionalTrigger: 'Unclear.',
+    creativeAngle: 'Hold for manual review before using in creative inputs.',
+    suggestedTemplateUse: 'Manual review only.',
+    notes: `Source evidence: ${seed.postText}`,
+  };
+}
+
 function explainEngagement(seed: SeedPost, route: ProfileRoute, scores: ScoreSummary): string {
   if (scores.comprehensionFit <= 2) {
     return 'Useful to monitor, but the post is too technical for a confident public reply without a narrower founder, product, or workflow angle.';
@@ -341,6 +489,15 @@ function formatScores(scores: ScoreSummary): string {
 }
 
 function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
+  const painMemorySummary = items.map((item) => {
+    return [
+      `- ${item.painMemory.sourcePostId}: ${item.painMemory.painPoint}`,
+      `  - Language: ${item.painMemory.audienceLanguage}`,
+      `  - Creative angle: ${item.painMemory.creativeAngle}`,
+      `  - Confidence: ${item.painMemory.confidence}`,
+    ].join('\n');
+  });
+
   const sections = items.map((item, index) => {
     return [
       `## ${index + 1}. ${item.seed.topic}`,
@@ -357,6 +514,13 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
       `- Recommended action: ${item.recommendedAction}`,
       '',
       `Why this is worth engaging: ${item.whyWorthEngaging}`,
+      '',
+      `Extracted audience signal:`,
+      '',
+      `- Pain point: ${item.painMemory.painPoint}`,
+      `- Objection: ${item.painMemory.objection}`,
+      `- Emotional trigger: ${item.painMemory.emotionalTrigger}`,
+      `- Creative angle: ${item.painMemory.creativeAngle}`,
       '',
       `Draft reply:`,
       '',
@@ -375,6 +539,10 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
     '',
     'Manual-input distribution review queue. No scraping, posting, platform calls, or external APIs were used.',
     '',
+    '## Pain Memory Summary',
+    '',
+    ...painMemorySummary,
+    '',
     ...sections,
     '',
   ].join('\n');
@@ -386,17 +554,20 @@ const generatedAt = new Date().toISOString();
 const timestamp = generatedAt.replace(/[:.]/g, '-');
 const runDir = join(repoRoot, 'output', `run-${timestamp}`);
 const outputPath = join(runDir, 'conversation-scout-review.md');
+const painMemoryPath = join(runDir, 'pain-point-memory.json');
 
 const reviewItems: ReviewItem[] = seedPosts.map((seed) => {
   const route = routeProfile(seed, profiles);
   const scores = scorePost(seed, route);
   const recommendedAction = recommendAction(seed, route, scores);
+  const painMemory = extractPainMemory(seed, route, scores);
 
   return {
     seed,
     route,
     scores,
     whyWorthEngaging: explainEngagement(seed, route, scores),
+    painMemory,
     draftReply: createDraftReply(seed, route, recommendedAction),
     riskNote: createRiskNote(scores),
     recommendedAction,
@@ -406,5 +577,11 @@ const reviewItems: ReviewItem[] = seedPosts.map((seed) => {
 
 mkdirSync(runDir, { recursive: true });
 writeFileSync(outputPath, formatReviewQueue(reviewItems, generatedAt), 'utf-8');
+writeFileSync(
+  painMemoryPath,
+  `${JSON.stringify(reviewItems.map((item) => item.painMemory), null, 2)}\n`,
+  'utf-8',
+);
 
 console.log(outputPath);
+console.log(painMemoryPath);
