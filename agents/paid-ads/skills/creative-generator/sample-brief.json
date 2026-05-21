@@ -20,7 +20,7 @@
       "McKinsey",
       "BCG",
       "Bain",
-      "consulting (employer keyword, catches boutiques)"
+      "consulting employer keyword"
     ],
     "interests": [
       "Harvard Business Review",
@@ -83,5 +83,117 @@
     "voice": "Direct, adult-to-adult, slightly contrarian. No em dashes. No 'leverage', 'transform', 'revolutionize', or 'AI-powered'.",
     "site": "helloverbatim.com"
   },
+  "researchInputs": {
+    "audiencePainPoints": [
+      "Consultants risk reputational damage when client-facing work includes a confident but wrong AI conclusion.",
+      "Solo and boutique consultants often do not have a colleague available to challenge assumptions before delivery.",
+      "The pain is not generic hallucination risk. It is missing something important in a paid client deliverable."
+    ],
+    "competitorPatterns": [
+      "Most AI-tool ads emphasize speed and productivity.",
+      "Fact-checking tools often frame the problem as generic accuracy rather than professional risk.",
+      "Consultant-facing software often uses calm editorial layouts and direct risk language."
+    ],
+    "resonantCopyPatterns": [
+      "Lead with the cost of missing something, not feature mechanics.",
+      "Use a direct second-person claim that maps to client-facing anxiety.",
+      "Keep the body copy concrete: answer, models, disagreement, deliverable."
+    ],
+    "resonantVisualPatterns": [
+      "High-contrast type that can be read at thumbnail size.",
+      "Minimal brand system with Verbatim pink as an accent or full-field background.",
+      "Product-like disagreement panels only when they clarify the Debate behavior."
+    ],
+    "objectionsToAddress": [
+      "I already use ChatGPT or Claude.",
+      "I can manually ask another model myself.",
+      "This sounds like a nice-to-have unless it saves me from client risk."
+    ],
+    "sourceNotes": [
+      "Derived from briefs/verbatim-consultant-test.md and docs/VERBATIM-CONTEXT.md.",
+      "Research fields are placeholders for future scraped or human-curated evidence.",
+      "No external research API has been called for this skeleton."
+    ]
+  },
+  "referenceExamples": [
+    {
+      "referenceId": "ref-editorial-risk",
+      "name": "Editorial Risk Statement",
+      "source": "Consultant brief pattern",
+      "whyItWorks": "It makes professional risk legible before explaining the product.",
+      "copyPattern": "One sharp risk claim followed by a concrete before-you-send-it payoff.",
+      "visualPattern": "White field, oversized black type, small pink accent, restrained wordmark.",
+      "caution": "Do not make it feel like generic fear marketing."
+    },
+    {
+      "referenceId": "ref-contrarian-meter",
+      "name": "Contrarian Meter",
+      "source": "Verbatim brand line",
+      "whyItWorks": "It carries the BULLSHIT METER energy without needing a long explanation.",
+      "copyPattern": "Short skeptical headline with a blunt proof or consequence line.",
+      "visualPattern": "Pink, black, and white. Dense headline. Minimal secondary text.",
+      "caution": "Use the edge sparingly so it does not become a bumper sticker."
+    },
+    {
+      "referenceId": "ref-product-disagreement",
+      "name": "Model Disagreement Proof",
+      "source": "Debate feature behavior",
+      "whyItWorks": "It shows the practical value: other models challenge what the first model missed.",
+      "copyPattern": "State the uncertainty, then show that Verbatim finds disagreement in one click.",
+      "visualPattern": "Simplified product panel with model disagreement rows and a clear verdict area.",
+      "caution": "Do not fake precision or imply automated truth certification."
+    }
+  ],
+  "templateCandidates": [
+    {
+      "templateId": "tmpl-editorial-risk",
+      "templateName": "Editorial Risk Statement",
+      "sourceReferences": [
+        "ref-editorial-risk"
+      ],
+      "layoutPattern": "Large headline top-left, concise body copy below, thin Verbatim pink rule, small wordmark footer.",
+      "copyPattern": "Risk-first headline plus before-the-deliverable body copy.",
+      "visualRules": [
+        "Use white or light pink background.",
+        "Keep headline readable at thumbnail size.",
+        "Use one Verbatim pink accent only."
+      ],
+      "whyThisTemplate": "It is the cleanest first template for consultant pain because it emphasizes reputational risk without visual noise.",
+      "approvalStatus": "approved"
+    },
+    {
+      "templateId": "tmpl-contrarian-meter",
+      "templateName": "Contrarian Meter",
+      "sourceReferences": [
+        "ref-contrarian-meter",
+        "ref-editorial-risk"
+      ],
+      "layoutPattern": "Full-frame type block, pink or black background, brand line used as a small supporting element.",
+      "copyPattern": "Blunt skeptical hook with short consequence-driven body copy.",
+      "visualRules": [
+        "Limit palette to pink, black, and white.",
+        "Avoid decorative effects.",
+        "Keep the brand line secondary to the actual hook."
+      ],
+      "whyThisTemplate": "It tests Verbatim's sharper voice while staying tied to the consultant risk wedge.",
+      "approvalStatus": "approved"
+    },
+    {
+      "templateId": "tmpl-disagreement-proof",
+      "templateName": "Disagreement Proof Panel",
+      "sourceReferences": [
+        "ref-product-disagreement"
+      ],
+      "layoutPattern": "Hook above a simplified Debate panel showing model disagreement and a concise takeaway.",
+      "copyPattern": "Uncertainty claim followed by proof that multiple models can surface disagreement.",
+      "visualRules": [
+        "Use product-like UI only as a mock until real screenshots are approved.",
+        "Label the panel as an example if rendered later.",
+        "Do not imply Verbatim guarantees correctness."
+      ],
+      "whyThisTemplate": "It may help users understand the Debate behavior, but it needs real product screenshot validation before image generation.",
+      "approvalStatus": "needs-review"
+    }
+  ],
   "outputCount": 10
 }

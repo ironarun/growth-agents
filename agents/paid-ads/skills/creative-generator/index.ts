@@ -39,6 +39,36 @@ interface Product {
   feature: string;
 }
 
+interface ResearchInputs {
+  audiencePainPoints: string[];
+  competitorPatterns: string[];
+  resonantCopyPatterns: string[];
+  resonantVisualPatterns: string[];
+  objectionsToAddress: string[];
+  sourceNotes: string[];
+}
+
+interface ReferenceExample {
+  referenceId: string;
+  name: string;
+  source: string;
+  whyItWorks: string;
+  copyPattern: string;
+  visualPattern: string;
+  caution: string;
+}
+
+interface TemplateCandidate {
+  templateId: string;
+  templateName: string;
+  sourceReferences: string[];
+  layoutPattern: string;
+  copyPattern: string;
+  visualRules: string[];
+  whyThisTemplate: string;
+  approvalStatus: 'approved' | 'needs-review' | 'rejected';
+}
+
 interface Brief {
   product: Product;
   audience: Audience;
@@ -47,11 +77,15 @@ interface Brief {
   bodyCopyOptions: string[];
   visualTreatments: VisualTreatment[];
   brand: Brand;
+  researchInputs: ResearchInputs;
+  referenceExamples: ReferenceExample[];
+  templateCandidates: TemplateCandidate[];
   outputCount: number;
 }
 
 interface Variant {
   id: string;
+  templateId: string;
   hook: Hook;
   bodyCopy: string;
   visualTreatment: VisualTreatment;
@@ -61,12 +95,15 @@ interface Variant {
 }
 
 interface Manifest {
+  runId: string;
   generatedAt: string;
-  product: string;
-  feature: string;
-  audience: string;
-  brand: Brand;
   briefPath: string;
+  product: Product;
+  audience: string;
+  researchInputs: ResearchInputs;
+  referenceExamples: ReferenceExample[];
+  templateCandidates: TemplateCandidate[];
+  approvedTemplates: TemplateCandidate[];
   variantCount: number;
   variants: Variant[];
 }
@@ -81,36 +118,49 @@ const runDir = join(repoRoot, 'output', `run-${timestamp}`);
 mkdirSync(runDir, { recursive: true });
 
 const hooks: Hook[] = [brief.primaryHook, brief.secondaryHook];
+const approvedTemplates = brief.templateCandidates.filter(
+  (template) => template.approvalStatus === 'approved',
+);
 const variants: Variant[] = [];
 
-let counter = 1;
-for (const hook of hooks) {
-  for (const treatment of brief.visualTreatments) {
-    if (variants.length >= brief.outputCount) break;
-    const bodyCopy = brief.bodyCopyOptions[variants.length % brief.bodyCopyOptions.length];
-    if (bodyCopy === undefined) continue;
-    const id = `v${String(counter).padStart(3, '0')}`;
-    counter += 1;
-    variants.push({
-      id,
-      hook,
-      bodyCopy,
-      visualTreatment: treatment,
-      audience: brief.audience.label,
-      status: 'planned',
-      notes: `${hook.id} x ${treatment.id} for ${brief.audience.label}.`,
-    });
+for (let index = 0; index < brief.outputCount; index += 1) {
+  const template = approvedTemplates[index % approvedTemplates.length];
+  const hook = hooks[index % hooks.length];
+  const bodyCopy = brief.bodyCopyOptions[index % brief.bodyCopyOptions.length];
+  const treatment = brief.visualTreatments[index % brief.visualTreatments.length];
+
+  if (
+    template === undefined ||
+    hook === undefined ||
+    bodyCopy === undefined ||
+    treatment === undefined
+  ) {
+    break;
   }
-  if (variants.length >= brief.outputCount) break;
+
+  const variantNumber = String(index + 1).padStart(3, '0');
+  variants.push({
+    id: `${template.templateId}-v${variantNumber}`,
+    templateId: template.templateId,
+    hook,
+    bodyCopy,
+    visualTreatment: treatment,
+    audience: brief.audience.label,
+    status: 'planned',
+    notes: `${template.templateName}: ${hook.id} x ${treatment.id} for ${brief.audience.label}.`,
+  });
 }
 
 const manifest: Manifest = {
+  runId: `run-${timestamp}`,
   generatedAt: new Date().toISOString(),
-  product: brief.product.name,
-  feature: brief.product.feature,
-  audience: brief.audience.label,
-  brand: brief.brand,
   briefPath: briefPath.split(repoRoot).join('').replace(/\\/g, '/'),
+  product: brief.product,
+  audience: brief.audience.label,
+  researchInputs: brief.researchInputs,
+  referenceExamples: brief.referenceExamples,
+  templateCandidates: brief.templateCandidates,
+  approvedTemplates,
   variantCount: variants.length,
   variants,
 };
