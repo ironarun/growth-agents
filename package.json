@@ -11,7 +11,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate:creative": "tsx agents/paid-ads/skills/creative-generator/index.ts",
     "scout:conversations": "tsx agents/conversation-scout/index.ts",
-    "creative:from-pain-memory": "tsx agents/paid-ads/skills/creative-generator/from-pain-memory.ts"
+    "creative:from-pain-memory": "tsx agents/paid-ads/skills/creative-generator/from-pain-memory.ts",
+    "gtm:loop": "tsx agents/gtm-loop/run.ts"
   },
   "keywords": [],
   "author": "",
