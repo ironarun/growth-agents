@@ -8,6 +8,9 @@ type Platform = 'LinkedIn' | 'Substack Notes' | 'X' | 'Reddit' | 'Hacker News';
 type TechnicalDepth = 'low' | 'medium' | 'high';
 type ProfileId = 'arun' | 'model-citizen' | 'verbatim' | 'unknown';
 type RecommendedAction = 'reply' | 'restack/comment' | 'quote/comment' | 'observe-only' | 'skip';
+type CollectionMethod = 'manual';
+type SourceType = 'post' | 'comment' | 'note' | 'thread';
+type UserIntent = 'reply' | 'quote' | 'observe' | 'research';
 
 interface SeedPost {
   id: string;
@@ -16,11 +19,18 @@ interface SeedPost {
   author: string;
   authorRole: string;
   postText: string;
+  fullContext: string;
+  quotedText: string;
+  threadContext: string;
   topic: string;
-  technicalDepth: TechnicalDepth;
-  suggestedProfile: ProfileId;
   observedAudience: string;
   whyItMightMatter: string;
+  technicalDepth: TechnicalDepth;
+  suggestedProfile: ProfileId;
+  collectedAt: string;
+  collectionMethod: CollectionMethod;
+  sourceType: SourceType;
+  userIntent: UserIntent;
 }
 
 interface Profile {
@@ -113,8 +123,28 @@ function topicMatchesProfile(seed: SeedPost, profile: Profile): boolean {
   return profile.topics.some((profileTopic) => topic.includes(profileTopic.toLowerCase()));
 }
 
+function seedContext(seed: SeedPost): string {
+  return [
+    seed.topic,
+    seed.postText,
+    seed.fullContext,
+    seed.quotedText,
+    seed.threadContext,
+    seed.whyItMightMatter,
+  ].join(' ');
+}
+
+function sourceEvidence(seed: SeedPost): string {
+  return [
+    seed.postText,
+    seed.quotedText === '' ? '' : `Quoted text: ${seed.quotedText}`,
+    seed.fullContext === '' ? '' : `Full context: ${seed.fullContext}`,
+    seed.threadContext === '' ? '' : `Thread context: ${seed.threadContext}`,
+  ].filter(Boolean).join(' ');
+}
+
 function routeProfile(seed: SeedPost, profiles: Profile[]): ProfileRoute {
-  const text = `${seed.topic} ${seed.postText} ${seed.whyItMightMatter}`.toLowerCase();
+  const text = seedContext(seed).toLowerCase();
   const suggested = profiles.find((profile) => profile.profileId === seed.suggestedProfile);
 
   if (suggested !== undefined) {
@@ -161,7 +191,7 @@ function routeProfile(seed: SeedPost, profiles: Profile[]): ProfileRoute {
 }
 
 function scorePost(seed: SeedPost, route: ProfileRoute): ScoreSummary {
-  const text = `${seed.topic} ${seed.postText} ${seed.whyItMightMatter}`.toLowerCase();
+  const text = seedContext(seed).toLowerCase();
 
   const relevanceSignals = [
     'claude',
@@ -241,6 +271,8 @@ function hnAngleFitsModelCitizen(seed: SeedPost, route: ProfileRoute): boolean {
 
 function recommendAction(seed: SeedPost, route: ProfileRoute, scores: ScoreSummary): RecommendedAction {
   const positiveScore = scores.relevance + scores.replyPotential + scores.founderFit + scores.comprehensionFit;
+  const quoteSupported = seed.platform === 'Substack Notes' || seed.platform === 'X';
+  const profileFitStrong = scores.relevance >= 4 && scores.comprehensionFit >= 4 && scores.credibilityRisk <= 3;
 
   if (scores.credibilityRisk >= 5 && scores.comprehensionFit <= 2) {
     return seed.platform === 'Hacker News' ? 'observe-only' : 'skip';
@@ -248,6 +280,22 @@ function recommendAction(seed: SeedPost, route: ProfileRoute, scores: ScoreSumma
 
   if (seed.platform === 'Hacker News' && !hnAngleFitsModelCitizen(seed, route)) {
     return 'observe-only';
+  }
+
+  if (seed.userIntent === 'observe') {
+    return profileFitStrong && scores.replyPotential >= 5 ? 'reply' : 'observe-only';
+  }
+
+  if (seed.userIntent === 'research') {
+    return profileFitStrong && route.profile.profileId === 'model-citizen' ? 'quote/comment' : 'observe-only';
+  }
+
+  if (seed.userIntent === 'quote') {
+    if (!quoteSupported) {
+      return profileFitStrong ? 'reply' : 'observe-only';
+    }
+
+    return profileFitStrong ? 'quote/comment' : 'observe-only';
   }
 
   if (positiveScore < 11) {
@@ -319,7 +367,8 @@ function confidenceFromScores(scores: ScoreSummary): PainMemoryEntry['confidence
 }
 
 function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSummary): PainMemoryEntry {
-  const text = `${seed.topic} ${seed.postText} ${seed.whyItMightMatter}`.toLowerCase();
+  const evidence = sourceEvidence(seed);
+  const text = seedContext(seed).toLowerCase();
   const topic = seed.topic.toLowerCase();
   const base = {
     id: `pain-${seed.id}`,
@@ -340,7 +389,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Skepticism toward inflated agent demos and benchmark theater.',
       creativeAngle: 'Do not sell autonomy to technical audiences before proving the workflow survives real repo constraints.',
       suggestedTemplateUse: 'Technical objection memory, product risk notes, observe-only HN research.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -353,7 +402,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Reputational risk in front of a client.',
       creativeAngle: 'Confidence is not correctness. Pressure-test the conclusion before it reaches the client.',
       suggestedTemplateUse: 'Verbatim consultant risk ad, client-facing deliverable hook, Debate feature proof.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -366,7 +415,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Fear of confident rework and repeated context loss.',
       creativeAngle: 'Repo memory beats chat memory because it preserves decisions and constraints.',
       suggestedTemplateUse: 'Founder workflow post, build-partner rubric content, agent memory explainer.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -379,7 +428,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Frustration with fake certainty from model leaderboards.',
       creativeAngle: 'The useful benchmark is which workflow leaves less wreckage after the first pass.',
       suggestedTemplateUse: 'Arun founder post, comparison thread reply, GTM engine build log.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -392,7 +441,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Fear of confident rework and repeated context loss.',
       creativeAngle: 'Repo memory beats chat memory because it preserves decisions and constraints.',
       suggestedTemplateUse: 'Founder workflow post, build-partner rubric content, agent memory explainer.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -405,7 +454,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Anxiety about shouting into the feed and getting nothing back.',
       creativeAngle: 'Conversation is not broadcasting. Find the thread before it turns generic.',
       suggestedTemplateUse: 'Conversation Scout positioning, Substack Notes post, Model Citizen distribution bit.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -418,7 +467,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
       emotionalTrigger: 'Impatience with slow execution loops.',
       creativeAngle: 'The win is not replacement. It is a shorter loop from problem to tested fix.',
       suggestedTemplateUse: 'Founder workflow essay, Arun reply template, GTM engine thesis content.',
-      notes: `Source evidence: ${seed.postText}`,
+      notes: `Source evidence: ${evidence}`,
     };
   }
 
@@ -430,7 +479,7 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
     emotionalTrigger: 'Unclear.',
     creativeAngle: 'Hold for manual review before using in creative inputs.',
     suggestedTemplateUse: 'Manual review only.',
-    notes: `Source evidence: ${seed.postText}`,
+    notes: `Source evidence: ${evidence}`,
   };
 }
 
@@ -464,6 +513,10 @@ function createRiskNote(scores: ScoreSummary): string {
 
 function createSkipOrObserveReason(action: RecommendedAction, seed: SeedPost, scores: ScoreSummary): string {
   if (action === 'observe-only') {
+    if (seed.userIntent === 'observe' || seed.userIntent === 'research') {
+      return `Observe only because userIntent is ${seed.userIntent} and the item is better used as audience signal than as a public reply.`;
+    }
+
     return `Observe only because ${seed.platform} plus ${seed.technicalDepth} technical depth creates a low-comprehension, high-credibility-risk reply surface.`;
   }
 
@@ -504,7 +557,10 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
       '',
       `- Platform: ${item.seed.platform}`,
       `- Author: ${item.seed.author}, ${item.seed.authorRole}`,
-      `- URL: ${item.seed.url}`,
+      `- Source URL: ${item.seed.url}`,
+      `- Source type: ${item.seed.sourceType}`,
+      `- User intent: ${item.seed.userIntent}`,
+      `- Collection: ${item.seed.collectionMethod} at ${item.seed.collectedAt}`,
       `- Technical depth: ${item.seed.technicalDepth}`,
       `- Selected profile: ${item.route.profile.name} (${item.route.profile.profileId})`,
       `- Why this profile fits: ${item.route.whyProfileFits}`,
@@ -512,6 +568,18 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
       `- Comprehension fit: ${item.scores.comprehensionFit}/5`,
       `- Credibility risk: ${item.scores.credibilityRisk}/5`,
       `- Recommended action: ${item.recommendedAction}`,
+      '',
+      `Full context:`,
+      '',
+      item.seed.fullContext === '' ? '_No full context provided._' : item.seed.fullContext,
+      '',
+      `Quoted text:`,
+      '',
+      item.seed.quotedText === '' ? '_No quoted text provided._' : `> ${item.seed.quotedText}`,
+      '',
+      `Thread context:`,
+      '',
+      item.seed.threadContext === '' ? '_No thread context provided._' : item.seed.threadContext,
       '',
       `Why this is worth engaging: ${item.whyWorthEngaging}`,
       '',
@@ -525,6 +593,8 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
       `Draft reply:`,
       '',
       `> ${item.draftReply}`,
+      '',
+      'Edit before posting: [ ]',
       '',
       `Risk note: ${item.riskNote}`,
       '',
