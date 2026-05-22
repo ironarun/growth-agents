@@ -438,6 +438,33 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
     };
   }
 
+  if (
+    includesAny(topic, ['ai and work transition']) ||
+    includesAny(text, [
+      'messy middle',
+      'labor market',
+      'job disruption',
+      'post-agi',
+      'knowledge work',
+      'knowledge-work',
+      'institutions',
+      'safety net',
+      'transition period',
+      'mostly intact labor market',
+    ])
+  ) {
+    return {
+      ...base,
+      painPoint: 'Knowledge workers and founders are being asked to adapt to AI disruption faster than institutions, safety nets, and career paths can adjust.',
+      audienceLanguage: 'messy middle, job disruption, post-AGI world, transition period, mostly intact labor market',
+      objection: "The AI debate keeps jumping from today's tools to future abundance while skipping the brutal transition period.",
+      emotionalTrigger: 'Anxiety about being personally caught in the economic transition before society knows how to handle it.',
+      creativeAngle: 'The hard part is not imagining abundance. It is surviving the messy middle.',
+      suggestedTemplateUse: 'Arun Substack reply, Model Citizen essay angle, AI work transition research note.',
+      notes: `Source evidence: ${evidence}`,
+    };
+  }
+
   if (includesAny(topic, ['memory', 'context'])) {
     return {
       ...base,
