@@ -1,0 +1,42 @@
+[
+  {
+    "id": "example-linkedin-arun-001",
+    "platform": "LinkedIn",
+    "url": "https://www.linkedin.com/posts/example_manual-seed-ai-workflow",
+    "author": "Sample Founder",
+    "authorRole": "Founder building internal tools",
+    "postText": "I do not need an AI agent to build the whole product. I need it to make the next annoying fix less expensive to start.",
+    "fullContext": "Example manual seed. The post is a founder-level workflow observation, not a technical agent benchmark. Good fit for Arun because it is about reducing execution drag without pretending the model replaces judgment.",
+    "quotedText": "",
+    "threadContext": "Comments are about where agents actually save time: small bugs, copy changes, internal tools, and first drafts.",
+    "topic": "founders using AI tools",
+    "observedAudience": "Founders, indie hackers, operators using AI coding agents",
+    "whyItMightMatter": "Good fit for Arun's workflow framing: shorter loop from problem to tested fix.",
+    "technicalDepth": "low",
+    "suggestedProfile": "arun",
+    "collectedAt": "2026-05-22T10:00:00-04:00",
+    "collectionMethod": "manual",
+    "sourceType": "post",
+    "userIntent": "reply"
+  },
+  {
+    "id": "example-substack-model-citizen-002",
+    "platform": "Substack Notes",
+    "url": "https://substack.com/@example/note/c-345678901",
+    "author": "Sample Newsletter Writer",
+    "authorRole": "Writer covering internet culture",
+    "postText": "Everyone says Notes is for conversation, then immediately uses it like a smaller, sadder billboard.",
+    "fullContext": "Example manual seed. This is a platform-behavior observation with a dry comic angle. Strong fit for The Model Citizen.",
+    "quotedText": "a smaller, sadder billboard",
+    "threadContext": "Thread is discussing whether Notes works better for replies, quotes, or reposting polished essays.",
+    "topic": "Substack/Notes distribution",
+    "observedAudience": "Newsletter writers, media operators, founders building audience",
+    "whyItMightMatter": "Useful for Conversation Scout positioning and The Model Citizen's dry distribution commentary.",
+    "technicalDepth": "low",
+    "suggestedProfile": "model-citizen",
+    "collectedAt": "2026-05-22T10:05:00-04:00",
+    "collectionMethod": "manual",
+    "sourceType": "note",
+    "userIntent": "quote"
+  }
+]

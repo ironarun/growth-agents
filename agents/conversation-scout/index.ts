@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 type Platform = 'LinkedIn' | 'Substack Notes' | 'X' | 'Reddit' | 'Hacker News';
@@ -90,12 +90,44 @@ interface ReviewItem {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const seedPostsPath = join(here, 'seed-posts.json');
+const defaultSeedPostsPath = join(here, 'seed-posts.json');
 const profilesDir = join(here, 'profiles');
 const repoRoot = resolve(here, '..', '..');
 
 function readJson<T>(filePath: string): T {
   return JSON.parse(readFileSync(filePath, 'utf-8')) as T;
+}
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+
+function resolveSeedPostsPath(rawPath: string | undefined): string {
+  if (rawPath === undefined || rawPath.trim() === '') {
+    return defaultSeedPostsPath;
+  }
+
+  return isAbsolute(rawPath) ? rawPath : resolve(repoRoot, rawPath);
+}
+
+function readSeedPosts(filePath: string): SeedPost[] {
+  if (!existsSync(filePath)) {
+    fail(`Seed input file does not exist: ${filePath}`);
+  }
+
+  let parsed: unknown;
+
+  try {
+    parsed = readJson<unknown>(filePath);
+  } catch (error) {
+    fail(`Seed input file is not valid JSON: ${filePath}. ${String(error)}`);
+  }
+
+  if (!Array.isArray(parsed)) {
+    fail(`Seed input JSON must be an array: ${filePath}`);
+  }
+
+  return parsed as SeedPost[];
 }
 
 function clampScore(score: number): number {
@@ -419,6 +451,19 @@ function extractPainMemory(seed: SeedPost, route: ProfileRoute, scores: ScoreSum
     };
   }
 
+  if (includesAny(topic, ['founder', 'founders']) || includesAny(text, ['reduce the delay', 'testing a fix'])) {
+    return {
+      ...base,
+      painPoint: 'Founders want AI tools to reduce delay between noticing a problem and testing a fix.',
+      audienceLanguage: 'reduce the delay, testing a fix, workflow matters more than the leaderboard',
+      objection: 'AI workflows are mainly about replacing people.',
+      emotionalTrigger: 'Impatience with slow execution loops.',
+      creativeAngle: 'The win is not replacement. It is a shorter loop from problem to tested fix.',
+      suggestedTemplateUse: 'Founder workflow essay, Arun reply template, GTM engine thesis content.',
+      notes: `Source evidence: ${evidence}`,
+    };
+  }
+
   if (includesAny(text, ['benchmark', 'claude', 'codex', 'coding agent'])) {
     return {
       ...base,
@@ -541,7 +586,7 @@ function formatScores(scores: ScoreSummary): string {
   ].join(', ');
 }
 
-function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
+function formatReviewQueue(items: ReviewItem[], generatedAt: string, sourceSeedPath: string): string {
   const painMemorySummary = items.map((item) => {
     return [
       `- ${item.painMemory.sourcePostId}: ${item.painMemory.painPoint}`,
@@ -607,6 +652,8 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
     '',
     `Generated at: ${generatedAt}`,
     '',
+    `sourceSeedPath: ${sourceSeedPath}`,
+    '',
     'Manual-input distribution review queue. No scraping, posting, platform calls, or external APIs were used.',
     '',
     '## Pain Memory Summary',
@@ -618,7 +665,8 @@ function formatReviewQueue(items: ReviewItem[], generatedAt: string): string {
   ].join('\n');
 }
 
-const seedPosts = readJson<SeedPost[]>(seedPostsPath);
+const seedPostsPath = resolveSeedPostsPath(process.argv[2]);
+const seedPosts = readSeedPosts(seedPostsPath);
 const profiles = loadProfiles();
 const generatedAt = new Date().toISOString();
 const timestamp = generatedAt.replace(/[:.]/g, '-');
@@ -646,7 +694,7 @@ const reviewItems: ReviewItem[] = seedPosts.map((seed) => {
 });
 
 mkdirSync(runDir, { recursive: true });
-writeFileSync(outputPath, formatReviewQueue(reviewItems, generatedAt), 'utf-8');
+writeFileSync(outputPath, formatReviewQueue(reviewItems, generatedAt, seedPostsPath), 'utf-8');
 writeFileSync(
   painMemoryPath,
   `${JSON.stringify(reviewItems.map((item) => item.painMemory), null, 2)}\n`,
