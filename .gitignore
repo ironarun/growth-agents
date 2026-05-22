@@ -3,3 +3,6 @@ node_modules/
 dist/
 .DS_Store
 output/
+
+# Local manual Conversation Scout seed files
+agents/conversation-scout/examples/*.local.json
