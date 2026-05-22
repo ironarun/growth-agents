@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 interface Hook {
@@ -98,6 +98,7 @@ interface Manifest {
   runId: string;
   generatedAt: string;
   briefPath: string;
+  sourceResearchInputPath: string | null;
   product: Product;
   audience: string;
   researchInputs: ResearchInputs;
@@ -110,9 +111,96 @@ interface Manifest {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const briefPath = join(here, 'sample-brief.json');
-const brief = JSON.parse(readFileSync(briefPath, 'utf-8')) as Brief;
-
 const repoRoot = resolve(here, '..', '..', '..', '..');
+
+const researchInputFields: Array<keyof ResearchInputs> = [
+  'audiencePainPoints',
+  'competitorPatterns',
+  'resonantCopyPatterns',
+  'resonantVisualPatterns',
+  'objectionsToAddress',
+  'sourceNotes',
+];
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+
+function readJsonFile(filePath: string): unknown {
+  try {
+    return JSON.parse(readFileSync(filePath, 'utf-8')) as unknown;
+  } catch (error) {
+    fail(`Invalid JSON or unreadable file: ${filePath}. ${String(error)}`);
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function validateResearchInputs(value: unknown): ResearchInputs {
+  if (!isRecord(value)) {
+    fail('External research input JSON must include a researchInputs object.');
+  }
+
+  const researchInputs = value.researchInputs;
+  if (!isRecord(researchInputs)) {
+    fail('External research input JSON is missing researchInputs.');
+  }
+
+  for (const field of researchInputFields) {
+    if (!Array.isArray(researchInputs[field])) {
+      fail(`External researchInputs.${field} must be an array.`);
+    }
+  }
+
+  return {
+    audiencePainPoints: (researchInputs.audiencePainPoints as unknown[]).map((item) => String(item)),
+    competitorPatterns: (researchInputs.competitorPatterns as unknown[]).map((item) => String(item)),
+    resonantCopyPatterns: (researchInputs.resonantCopyPatterns as unknown[]).map((item) => String(item)),
+    resonantVisualPatterns: (researchInputs.resonantVisualPatterns as unknown[]).map((item) => String(item)),
+    objectionsToAddress: (researchInputs.objectionsToAddress as unknown[]).map((item) => String(item)),
+    sourceNotes: (researchInputs.sourceNotes as unknown[]).map((item) => String(item)),
+  };
+}
+
+function dedupe(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function mergeResearchInputs(base: ResearchInputs, external: ResearchInputs): ResearchInputs {
+  return {
+    audiencePainPoints: dedupe([...base.audiencePainPoints, ...external.audiencePainPoints]),
+    competitorPatterns: dedupe([...base.competitorPatterns, ...external.competitorPatterns]),
+    resonantCopyPatterns: dedupe([...base.resonantCopyPatterns, ...external.resonantCopyPatterns]),
+    resonantVisualPatterns: dedupe([...base.resonantVisualPatterns, ...external.resonantVisualPatterns]),
+    objectionsToAddress: dedupe([...base.objectionsToAddress, ...external.objectionsToAddress]),
+    sourceNotes: dedupe([...base.sourceNotes, ...external.sourceNotes]),
+  };
+}
+
+function resolveOptionalResearchInputPath(rawPath: string | undefined): string | null {
+  if (rawPath === undefined || rawPath.trim() === '') {
+    return null;
+  }
+
+  const resolvedPath = isAbsolute(rawPath) ? rawPath : resolve(repoRoot, rawPath);
+
+  if (!existsSync(resolvedPath)) {
+    fail(`External research input file does not exist: ${resolvedPath}`);
+  }
+
+  return resolvedPath;
+}
+
+const brief = readJsonFile(briefPath) as Brief;
+const sourceResearchInputPath = resolveOptionalResearchInputPath(process.argv[2]);
+
+if (sourceResearchInputPath !== null) {
+  const externalResearchInputs = validateResearchInputs(readJsonFile(sourceResearchInputPath));
+  brief.researchInputs = mergeResearchInputs(brief.researchInputs, externalResearchInputs);
+}
+
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 const runDir = join(repoRoot, 'output', `run-${timestamp}`);
 mkdirSync(runDir, { recursive: true });
@@ -155,6 +243,7 @@ const manifest: Manifest = {
   runId: `run-${timestamp}`,
   generatedAt: new Date().toISOString(),
   briefPath: briefPath.split(repoRoot).join('').replace(/\\/g, '/'),
+  sourceResearchInputPath,
   product: brief.product,
   audience: brief.audience.label,
   researchInputs: brief.researchInputs,
