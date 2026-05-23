@@ -1,0 +1,56 @@
+[
+  {
+    "source": "manual_sample",
+    "source_type": "article_excerpt",
+    "url": "https://example.com/manual-sample/ai-overconfidence-consulting-risk",
+    "title": "Manual sample: AI overconfidence in client-facing consultant work",
+    "domain": "example.com",
+    "author": "Manual research seed",
+    "extracted_text": "Sample/manual source. A boutique consultant describes using AI to draft a market-sizing section for a client deck. The draft was polished and confident, but it invented a causal explanation that was not supported by the data. The consultant caught it before sending, but only after asking a colleague to challenge the conclusion. The painful part was not that the AI made a mistake. The painful part was that the mistake sounded like a finished consultant paragraph.",
+    "summary": "Manual sample about polished but unreliable AI output creating client-facing risk for consultants.",
+    "pain_points": [
+      {
+        "audience": "Independent and boutique consultants",
+        "pain_point": "AI can produce a polished client-ready paragraph that hides an unsupported conclusion.",
+        "audience_language": "polished and confident, finished consultant paragraph, unsupported conclusion",
+        "objection": "I can catch AI mistakes myself if I review the work carefully.",
+        "emotional_trigger": "Fear of sending a confident but fragile conclusion to a client.",
+        "evidence_quote": "The painful part was not that the AI made a mistake. The painful part was that the mistake sounded like a finished consultant paragraph.",
+        "confidence": "high",
+        "notes": "Manual sample for Verbatim consultant ad research. Use as evidence for adversarial review before client delivery.",
+        "ad_angle": "Polished is not proven",
+        "hook": "Your AI draft sounds ready. That is the risk.",
+        "body_direction": "Position Verbatim as adversarial review for AI work before a consultant relies on it in a client deliverable.",
+        "proof_point": "The danger is not rough output. It is confident output that nobody has challenged.",
+        "risk_note": "Do not imply Verbatim guarantees correctness. Frame it as structured challenge and review."
+      }
+    ]
+  },
+  {
+    "source": "manual_sample",
+    "source_type": "conversation_note",
+    "url": "https://example.com/manual-sample/hollow-flattery-ai-strategy-work",
+    "title": "Manual sample: hollow flattery in AI strategy work",
+    "domain": "example.com",
+    "author": "Manual research seed",
+    "extracted_text": "Sample/manual source. A solo strategy consultant says AI assistants often validate a proposed recommendation too quickly. The assistant praises the framing, strengthens the argument, and produces a cleaner version, but it rarely asks whether the recommendation is strategically wrong. The consultant wants a second brain that pushes back before the work becomes a client recommendation.",
+    "summary": "Manual sample about hollow AI agreement and the need for adversarial challenge before acting on AI-assisted strategy work.",
+    "pain_points": [
+      {
+        "audience": "Independent and boutique consultants",
+        "pain_point": "AI assistants often make a weak recommendation sound stronger instead of challenging whether it is wrong.",
+        "audience_language": "validate too quickly, praises the framing, cleaner version, rarely asks whether the recommendation is wrong",
+        "objection": "I already use AI as a second brain for strategy work.",
+        "emotional_trigger": "Concern that the tool is reinforcing the consultant's first answer instead of testing it.",
+        "evidence_quote": "The assistant praises the framing, strengthens the argument, and produces a cleaner version, but it rarely asks whether the recommendation is strategically wrong.",
+        "confidence": "high",
+        "notes": "Manual sample for Verbatim consultant ad research. Use as evidence for hollow flattery and over-agreement.",
+        "ad_angle": "The second brain should push back",
+        "hook": "AI will clean up your thinking. Verbatim challenges it.",
+        "body_direction": "Show Verbatim as adversarial review for AI-assisted recommendations, especially before client-facing decisions.",
+        "proof_point": "A cleaner argument is not the same as a challenged argument.",
+        "risk_note": "Avoid attacking AI use generally. The wedge is review before reliance."
+      }
+    ]
+  }
+]
