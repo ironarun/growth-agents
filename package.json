@@ -14,7 +14,8 @@
     "creative:from-pain-memory": "tsx agents/paid-ads/skills/creative-generator/from-pain-memory.ts",
     "gtm:loop": "tsx agents/gtm-loop/run.ts",
     "supabase:smoke": "tsx scripts/supabase-smoke-test.ts",
-    "consultant:ingest-manual": "tsx scripts/ingest-manual-consultant-sources.ts"
+    "consultant:ingest-manual": "tsx scripts/ingest-manual-consultant-sources.ts",
+    "consultant:ad-review": "tsx scripts/generate-consultant-ad-review.ts"
   },
   "keywords": [],
   "author": "",
