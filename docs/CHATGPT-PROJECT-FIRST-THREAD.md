@@ -56,13 +56,21 @@ Direct, skeptical, adult-to-adult, slightly contrarian.
 Avoid: leverage, transform, revolutionize, AI-powered, unlock, seamless.
 
 Current GTM test:
-The first paid test targets independent and boutique consultants. The wedge is Verbatim Debate: pressure-test AI conclusions before sending client deliverables.
+The first paid test targets independent and boutique consultants. The wedge is that client-facing AI work should be challenged before action.
 
-Primary hook:
+Current positioning:
+Adversarial review for AI.
+
+Supporting frame:
+AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
+
+Historical primary hook, now deprecated:
 “You don’t know what you’re missing. Find out before it costs you.”
 
 Secondary hook:
 “You don’t always have someone to push back. AI never does.”
+
+This secondary hook is historical context only. New ad concepts should use the current positioning and source-backed consultant pain.
 
 Priority rule:
 Funnel instrumentation comes before creative volume. A working funnel with three ads beats 30 generated ads pointed at a broken measurement system.
@@ -90,7 +98,7 @@ I have a repo at:
 
 C:\Users\Arun\growth-agents\
 
-This repo was scaffolded from prior Claude/Claude Code work. It is the start of a GTM engineering infrastructure layer. First customer is Verbatim, my Chrome extension and AI confidence layer at helloverbatim.com.
+This repo was scaffolded from prior Claude/Claude Code work. It is the start of a GTM engineering infrastructure layer. First customer is Verbatim, currently positioned as adversarial review for AI at helloverbatim.com.
 
 I do not want a second repo unless there is a strong reason. Default plan is: same repo, Codex branches.
 

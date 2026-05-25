@@ -2,7 +2,9 @@
 
 ## Product
 
-Verbatim. Chrome extension. Fact-check and pressure-test AI responses via multi-model debate. Live on Chrome Web Store. Site: helloverbatim.com.
+Verbatim. Adversarial review for AI. Chrome extension. Fact-check and pressure-test AI responses via multi-model debate. Live on Chrome Web Store. Site: helloverbatim.com.
+
+Supporting frame: AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
 
 Subhead voice: **"A.I. JUST GOT A BULLSHIT METER."**
 
@@ -21,7 +23,7 @@ Scoring on three criteria (find, pay, pain):
 - Pay: HIGH. Billing $150-400/hr. A $30/month tool is trivially expensable.
 - Pain: HIGH and stakes-loaded. AI hallucinations in client deliverables damage their career.
 
-Product wedge: pressure-test AI conclusions before sending to clients. Use Insights to demonstrate "verified by multiple models" as quality differentiation on deliverables.
+Product wedge: client-facing AI work should be challenged before action. Use Debate to pressure-test conclusions before they become client deliverables.
 
 ## Meta targeting parameters
 
@@ -34,11 +36,15 @@ Skip lookalike audiences for Round 1 unless any existing 6-10 users are consulta
 
 ## Hooks
 
-**Primary (#6):** "You don't know what you're missing. Find out before it costs you."
+Deprecated, do not use in new ad concepts:
 
-**Secondary (#4):** "You don't always have someone to push back. AI never does."
+**Former primary (#6):** "You don't know what you're missing. Find out before it costs you."
 
-Six hooks were considered in the office-hours session. These two won for the consultant audience because they are stakes-loaded (consultant pain = reputational/billable risk). The other four are reserved for testing against different ICPs in future rounds:
+Historical candidate, not currently approved:
+
+**Former secondary (#4):** "You don't always have someone to push back. AI never does."
+
+Six hooks were considered in the office-hours session. This section is historical context only. New ad concepts should use the current positioning, "Adversarial review for AI," and source-backed pain around overconfidence, hollow flattery, hallucination, polished but unreliable AI work, and client-facing risk.
 
 1. "AI agrees with you. That's the problem."
 2. "AI says yes. Verbatim asks why."
@@ -54,6 +60,8 @@ Match Verbatim's "BULLSHIT METER" edge. No softening. Examples to test:
 - "Confidence is not correctness. Verbatim is the difference, in one click, without leaving the page."
 
 The voice is direct, adult-to-adult, slightly contrarian. Avoid "leverage," "transform," "revolutionize," "AI-powered." Avoid em dashes.
+
+Current ad concepts should frame Verbatim as adversarial review for AI, not as generic confidence software.
 
 ## Visual treatments to test
 
@@ -75,9 +83,11 @@ The voice is direct, adult-to-adult, slightly contrarian. Avoid "leverage," "tra
 ## Budget and schedule
 
 - **Total**: $45/day starting Monday May 18, 2026
-- **Ad set 1 (primary)**: hook #6, 3 variants, $30/day
-- **Ad set 2 (secondary)**: hook #4, 2 variants, $15/day
+- **Historical plan only**: hook #6, 3 variants, $30/day
+- **Historical plan only**: hook #4, 2 variants, $15/day
 - **Week 1 burn**: $315
+
+Do not use the historical hook #6 copy in new ad concepts.
 
 ## Conversion events to track
 

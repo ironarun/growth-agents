@@ -6,6 +6,18 @@ The goal is to generate better Meta ad concepts for independent and boutique con
 
 Verbatim is the first product pushed through this workflow. The workflow itself is the asset.
 
+Current positioning:
+
+```text
+Adversarial review for AI.
+```
+
+Supporting frame:
+
+```text
+AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
+```
+
 ## Workflow
 
 ```text
@@ -48,7 +60,7 @@ Independent and boutique consultants
 The working wedge is:
 
 ```text
-Pressure-test AI conclusions before sending client-facing work.
+Client-facing AI work should be challenged before action.
 ```
 
 The research should prioritize evidence about:
@@ -59,6 +71,12 @@ The research should prioritize evidence about:
 - Missing assumptions in client deliverables.
 - Reputational risk for consultants.
 - The gap between confidence and correctness.
+
+Deprecated hook, do not use in new ad concepts:
+
+```text
+You don't know what you're missing. Find out before it costs you.
+```
 
 ## Human Review
 

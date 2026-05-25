@@ -179,8 +179,8 @@ export async function generate(brief: Brief) {
 // Smoke test
 if (import.meta.url === `file://${process.argv[1]}`) {
   generate({
-    hook: "You don't know what you're missing. Find out before it costs you.",
-    body: "Verbatim pressure-tests every AI answer across multiple models. So you can act on it with confidence.",
+    hook: "Adversarial review for AI.",
+    body: "Verbatim is adversarial review for AI work before you act on it.",
     brand: { primary: '#F12258', logoUrl: 'https://helloverbatim.com/logo.png' },
     audience: 'independent-consultants',
   });

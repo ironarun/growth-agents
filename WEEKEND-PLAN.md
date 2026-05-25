@@ -2,6 +2,8 @@
 
 Saturday May 16 (4:30pm onward) through Monday May 18, 2026.
 
+Historical plan. Do not treat this file as current ad-copy guidance. The former hook #6, "You don't know what you're missing. Find out before it costs you.", is deprecated and must not be used in new ad concepts.
+
 The weekend ships Paid Ads Agent v0.1: foundation + creative-generator + minimal pain-point-scraper, plus the Verbatim funnel verification that makes the Monday launch measurable.
 
 ---
@@ -51,9 +53,11 @@ If the test variant looks right, you have permission to sleep.
 
 ### 8:00-10:00am — Bulk generation
 
+Historical plan only. Do not use these old hook allocations for new ad concepts.
+
 In CC, ask it to generate 30 variants using briefs/verbatim-consultant-test.md:
 
-- Hook #6 (primary): "You don't know what you're missing. Find out before it costs you." — 20 variants
+- Hook #6 (deprecated): "You don't know what you're missing. Find out before it costs you." — 20 variants
 - Hook #4 (secondary): "You don't always have someone to push back. AI never does." — 10 variants
 - 5 visual treatments per hook (clean editorial, bold all-type, contrarian, minimal, screenshot-mock)
 
@@ -62,8 +66,8 @@ CC writes the PNGs to `output/run-{timestamp}/`.
 ### 10:00-11:00am — Curate to 5 finalists
 
 Review the 30 PNGs. Pick:
-- 3 from hook #6
-- 2 from hook #4
+- 3 from historical hook #6 variants
+- 2 from historical hook #4 variants
 
 Decision criteria: stops scroll, voice matches Verbatim's "BULLSHIT METER" edge, hook is legible at thumbnail size.
 
@@ -72,7 +76,7 @@ Decision criteria: stops scroll, voice matches Verbatim's "BULLSHIT METER" edge,
 In Meta Ads Manager (manual upload, the auto-uploader is Round 2):
 
 1. Create new campaign: objective "Traffic" or "Leads"
-2. Create Ad Set 1: $30/day, 3 ads (hook #6 variants)
+2. Create Ad Set 1: $30/day, 3 ads (historical hook #6 variants)
 3. Create Ad Set 2: $15/day, 2 ads (hook #4 variants)
 4. Configure audience per briefs/verbatim-consultant-test.md (consultant job titles, employer keywords, AI tool behaviors)
 5. Set landing URL to helloverbatim.com

@@ -41,7 +41,7 @@ Compare the output using this rubric.
 Did the build partner understand:
 
 - Verbatim is the first client, not the whole business.
-- Debate is the current wedge.
+- Debate is the current feature wedge, with the growth wedge that client-facing AI work should be challenged before action.
 - Library/highlights are separate from Debate.
 - Consultants are the current ICP.
 - Funnel instrumentation comes before creative volume.

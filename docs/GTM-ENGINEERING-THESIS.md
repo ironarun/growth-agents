@@ -94,7 +94,13 @@ A narrow operating loop that can be used on Verbatim first.
 
 Verbatim.
 
-Verbatim is a confidence layer for AI work.
+Verbatim is currently positioned as:
+
+```text
+Adversarial review for AI.
+```
+
+AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
 
 The first GTM test is aimed at independent and boutique consultants who need to pressure-test AI-generated conclusions before client-facing use.
 

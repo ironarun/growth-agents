@@ -2,9 +2,9 @@
 
 ## One-line positioning
 
-Verbatim is a confidence layer for AI work.
+Adversarial review for AI.
 
-It helps users pressure-test important AI responses before relying on them.
+AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
 
 ## Origin
 
@@ -96,35 +96,32 @@ The consultant cares about:
 - looking careless in front of a client
 - needing a second brain but not having a team available
 
-## Current hooks
+## Current ad guidance
 
-Primary:
+Current positioning:
+
+```text
+Adversarial review for AI.
+```
+
+Core wedge:
+
+```text
+Client-facing AI work should be challenged before action.
+```
+
+Deprecated hook, do not use in new ad concepts:
 
 ```text
 You don’t know what you’re missing. Find out before it costs you.
 ```
 
-Secondary:
-
-```text
-You don’t always have someone to push back. AI never does.
-```
-
-Other useful lines:
+Older lines below are historical candidates only. They may be reviewed later, but they are not current approved hooks:
 
 ```text
 AI agrees with you. That’s the problem.
-```
-
-```text
 AI says yes. Verbatim asks why.
-```
-
-```text
 When you doubt the AI, who do you ask?
-```
-
-```text
 Your AI sparring partner.
 ```
 
@@ -169,7 +166,7 @@ Before paid acquisition scales, these must work:
 5. Add-to-Chrome click is tracked.
 6. Debate usage can be measured or inspected.
 
-## Current strategic frame
+## Historical strategic frame
 
 Verbatim is both:
 
@@ -183,8 +180,8 @@ and
 a confidence layer for AI work
 ```
 
-For acquisition, “confidence layer” is usually more useful because it maps to the user’s immediate question:
+This is historical positioning context. Current acquisition positioning is:
 
 ```text
-Can I trust this enough to use it?
+Adversarial review for AI.
 ```

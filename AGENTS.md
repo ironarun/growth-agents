@@ -52,9 +52,17 @@ If a task requires building marketing agents, creative generation, campaign anal
 
 ## Product context: Verbatim
 
-Verbatim is a confidence layer for AI work.
+Current positioning:
 
-It helps users pressure-test important AI responses before relying on them.
+```text
+Adversarial review for AI.
+```
+
+Supporting frame:
+
+```text
+AI is prone to overconfidence, hollow flattery, and hallucination. Verbatim challenges AI work before users act on it.
+```
 
 Verbatim started from a behavior Arun kept repeating manually:
 1. Get an important response from one AI model.
@@ -107,20 +115,16 @@ Reason:
 Current wedge:
 
 ```text
-Pressure-test AI conclusions before sending client-facing work.
+Client-facing AI work should be challenged before action.
 ```
 
-Primary hook:
+Deprecated hook:
 
 ```text
 You don’t know what you’re missing. Find out before it costs you.
 ```
 
-Secondary hook:
-
-```text
-You don’t always have someone to push back. AI never does.
-```
+Do not use the deprecated hook in new ad concepts.
 
 ## Build principle
 
