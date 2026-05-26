@@ -7,6 +7,7 @@ If any checklist item is incomplete, do not run the agent.
 ## Required
 
 - [ ] Identity defined.
+- [ ] Agent name and internal slug distinguished.
 - [ ] Runtime location defined.
 - [ ] Communication channels defined.
 - [ ] Repo path defined.
@@ -23,4 +24,3 @@ If any checklist item is incomplete, do not run the agent.
 The operator is not ready until the checklist is complete and the first terminal proof has passed.
 
 Only after terminal proof should Telegram operation be tested.
-
