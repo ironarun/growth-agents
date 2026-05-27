@@ -16,16 +16,20 @@ type HumanReviewItem = {
 type WorkflowRun = {
   id: string;
   created_at: string;
+  workflow_name: string;
 };
 
 type SourceEvidence = {
+  source?: string;
   source_document_id?: string;
   pain_point_id?: string;
   ad_angle_id?: string;
   url?: string;
   title?: string;
+  domain?: string;
   evidence_quote?: string;
   audience_language?: string;
+  matched_queries?: string[];
 };
 
 type AdAngle = {
@@ -45,6 +49,10 @@ type Candidate = {
 
 const rejectedHook = "You don't know what you're missing. Find out before it costs you.";
 const landingPageUrl = 'https://helloverbatim.com';
+const consultantResearchWorkflowNames = [
+  'consultant_ad_research_manual_ingest',
+  'consultant_ai_pain_search',
+];
 
 function fail(message: string): never {
   throw new Error(message);
@@ -74,6 +82,10 @@ function asSourceEvidence(value: unknown): SourceEvidence[] {
         evidence.source_document_id = item.source_document_id;
       }
 
+      if (typeof item.source === 'string') {
+        evidence.source = item.source;
+      }
+
       if (typeof item.pain_point_id === 'string') {
         evidence.pain_point_id = item.pain_point_id;
       }
@@ -90,12 +102,20 @@ function asSourceEvidence(value: unknown): SourceEvidence[] {
         evidence.title = item.title;
       }
 
+      if (typeof item.domain === 'string') {
+        evidence.domain = item.domain;
+      }
+
       if (typeof item.evidence_quote === 'string') {
         evidence.evidence_quote = item.evidence_quote;
       }
 
       if (typeof item.audience_language === 'string') {
         evidence.audience_language = item.audience_language;
+      }
+
+      if (Array.isArray(item.matched_queries)) {
+        evidence.matched_queries = item.matched_queries.filter((query): query is string => typeof query === 'string');
       }
 
       return evidence;
@@ -120,6 +140,10 @@ function parseBodyField(body: string | null, label: string): string | null {
 
 function unique(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function includesAny(haystack: string, needles: string[]): boolean {
+  return needles.some((needle) => haystack.includes(needle));
 }
 
 function chooseHook(candidate: Candidate): string {
@@ -190,18 +214,86 @@ function candidateDedupeKey(candidate: Candidate): string {
   return `review:${candidate.reviewItem.title ?? ''}:${candidate.reviewItem.body ?? ''}`;
 }
 
+function normalizedHookKey(candidate: Candidate): string {
+  return chooseHook(candidate).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function candidateText(candidate: Candidate): string {
+  return [
+    chooseHook(candidate),
+    chooseBodyDirection(candidate),
+    candidate.adAngle?.angle ?? '',
+    candidate.reviewItem.title ?? '',
+    candidate.reviewItem.body ?? '',
+    ...candidate.sourceEvidence.flatMap((evidence) => [
+      evidence.title ?? '',
+      evidence.evidence_quote ?? '',
+      evidence.audience_language ?? '',
+      ...(evidence.matched_queries ?? []),
+    ]),
+  ].join(' ').toLowerCase();
+}
+
+function candidatePriorityScore(candidate: Candidate): number {
+  const text = candidateText(candidate);
+  const hook = chooseHook(candidate);
+  let score = 0;
+
+  if (hook.trim().endsWith('?')) {
+    score += 3;
+  }
+
+  if (includesAny(text, ['output and action', 'before action', 'before decision', 'act on ai', 'acted on', 'good enough to use'])) {
+    score += 6;
+  }
+
+  if (includesAny(text, ['verification', 'reviewing ai outputs', 'review ai output', 'adversarial review', 'review step'])) {
+    score += 5;
+  }
+
+  if (includesAny(text, ['governance', 'oversight', 'risk management'])) {
+    score += 4;
+  }
+
+  if (includesAny(text, ['client', 'consultant', 'consulting', 'professional services', 'deliverable', 'business advice', 'business decision'])) {
+    score += 4;
+  }
+
+  if (includesAny(text, ['hallucination']) && !includesAny(text, ['client', 'professional', 'business', 'consultant', 'deliverable'])) {
+    score -= 4;
+  }
+
+  if (includesAny(text, ['sycophancy', 'flattery']) && !includesAny(text, ['review', 'decision', 'client', 'business'])) {
+    score -= 3;
+  }
+
+  return score;
+}
+
 function dedupeCandidates(candidates: Candidate[]): Candidate[] {
   const seen = new Set<string>();
+  const seenHooks = new Set<string>();
   const deduped: Candidate[] = [];
+  const ranked = [...candidates].sort((a, b) => {
+    const scoreDifference = candidatePriorityScore(b) - candidatePriorityScore(a);
 
-  for (const candidate of candidates) {
+    if (scoreDifference !== 0) {
+      return scoreDifference;
+    }
+
+    return b.reviewItem.created_at.localeCompare(a.reviewItem.created_at);
+  });
+
+  for (const candidate of ranked) {
     const key = candidateDedupeKey(candidate);
+    const hookKey = normalizedHookKey(candidate);
 
-    if (seen.has(key)) {
+    if (seen.has(key) || seenHooks.has(hookKey)) {
       continue;
     }
 
     seen.add(key);
+    seenHooks.add(hookKey);
     deduped.push(candidate);
   }
 
@@ -314,8 +406,9 @@ const supabase = createClient(
 
 const workflowRunResult = await supabase
   .from('workflow_runs')
-  .select('id, created_at')
-  .eq('workflow_name', 'consultant_ad_research_manual_ingest')
+  .select('id, created_at, workflow_name')
+  .in('workflow_name', consultantResearchWorkflowNames)
+  .eq('status', 'completed')
   .order('created_at', { ascending: false })
   .limit(1)
   .returns<WorkflowRun[]>();
@@ -327,7 +420,7 @@ if (workflowRunResult.error !== null) {
 const selectedWorkflowRun = workflowRunResult.data?.[0];
 
 if (selectedWorkflowRun === undefined) {
-  fail('No workflow_runs row found for workflow_name consultant_ad_research_manual_ingest.');
+  fail(`No completed workflow_runs row found for workflow_name in ${consultantResearchWorkflowNames.join(', ')}.`);
 }
 
 const reviewResult = await supabase
