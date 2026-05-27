@@ -17,6 +17,8 @@
     "consultant:ingest-manual": "tsx scripts/ingest-manual-consultant-sources.ts",
     "consultant:search-pain": "tsx scripts/search-consultant-ai-pain.ts",
     "consultant:content-brief": "tsx scripts/generate-content-brief.ts",
+    "consultant:content-draft": "tsx scripts/generate-content-draft.ts",
+    "consultant:content-edit-review": "tsx scripts/review-content-draft.ts",
     "consultant:ad-review": "tsx scripts/generate-consultant-ad-review.ts"
   },
   "keywords": [],
