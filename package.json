@@ -19,6 +19,7 @@
     "consultant:content-brief": "tsx scripts/generate-content-brief.ts",
     "consultant:content-draft": "tsx scripts/generate-content-draft.ts",
     "consultant:content-edit-review": "tsx scripts/review-content-draft.ts",
+    "consultant:content-rewrite": "tsx scripts/rewrite-content-draft.ts",
     "consultant:ad-review": "tsx scripts/generate-consultant-ad-review.ts"
   },
   "keywords": [],
