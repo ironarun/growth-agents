@@ -44,7 +44,11 @@ type FirecrawlResponse = {
 
 type ExtractionResult = {
   firecrawlStatus: 'stored' | 'request_failed' | 'no_text_extracted';
-  extractedText: string;
+  rawExtractedTextLength: number;
+  cleanedExtractedText: string;
+  cleanedExtractedTextLength: number;
+  removedChrome: boolean;
+  mojibakeRepaired: boolean;
   rawResponse: unknown;
   storedInSupabase: boolean;
   wroteExtractedSourceFile: boolean;
@@ -52,8 +56,24 @@ type ExtractionResult = {
   reviewPath: string;
 };
 
+type CleanupResult = {
+  rawText: string;
+  cleanedText: string;
+  rawTextLength: number;
+  cleanedTextLength: number;
+  removedChrome: boolean;
+  mojibakeRepaired: boolean;
+};
+
 const firecrawlScrapeUrl = 'https://api.firecrawl.dev/v1/scrape';
 const repoRoot = process.cwd();
+const badCleanedTextPatterns = [
+  'Agree & Join LinkedIn',
+  'By clicking Continue',
+  'Skip to main content',
+  'â',
+  'Â',
+];
 
 function fail(message: string): never {
   throw new Error(message);
@@ -206,6 +226,27 @@ function cleanExtractedText(rawText: string): string {
     .trim();
 }
 
+function buildCleanupResult(rawText: string): CleanupResult {
+  const cleanedText = cleanExtractedText(rawText);
+
+  return {
+    rawText,
+    cleanedText,
+    rawTextLength: rawText.length,
+    cleanedTextLength: cleanedText.length,
+    removedChrome: hasLinkedInChrome(rawText) && !hasLinkedInChrome(cleanedText),
+    mojibakeRepaired: hasMojibake(rawText) && !hasMojibake(cleanedText),
+  };
+}
+
+function assertCleanedTextIsUsable(cleanedText: string): void {
+  const matchedPatterns = badCleanedTextPatterns.filter((pattern) => cleanedText.includes(pattern));
+
+  if (matchedPatterns.length > 0) {
+    fail(`Cleaned extracted text still contains bad pattern(s): ${matchedPatterns.join(', ')}`);
+  }
+}
+
 function excerpt(value: string, maxLength: number): string {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 }
@@ -239,11 +280,17 @@ function formatReview(
     '',
     `Extracted text written to output: ${result.wroteExtractedSourceFile ? 'yes' : 'no'}`,
     '',
-    `Extracted text length: ${result.extractedText.length}`,
+    `Raw extracted text length: ${result.rawExtractedTextLength}`,
+    '',
+    `Cleaned extracted text length: ${result.cleanedExtractedTextLength}`,
+    '',
+    `Removed chrome: ${result.removedChrome ? 'yes' : 'no'}`,
+    '',
+    `Mojibake repaired: ${result.mojibakeRepaired ? 'yes' : 'no'}`,
     '',
     '## Extracted Text Preview',
     '',
-    excerpt(result.extractedText, 1500),
+    excerpt(result.cleanedExtractedText, 1500),
     '',
     '## Source Evidence Payload',
     '',
@@ -272,21 +319,20 @@ function resolveInputPath(rawPath: string): string {
 
 function formatCleanupReview(
   inputPath: string,
-  rawText: string,
-  cleanedText: string,
+  cleanup: CleanupResult,
 ): string {
   return [
     '# Source Cleanup Review',
     '',
     `Input path: ${inputPath}`,
     '',
-    `Raw text length: ${rawText.length}`,
+    `Raw text length: ${cleanup.rawTextLength}`,
     '',
-    `Cleaned text length: ${cleanedText.length}`,
+    `Cleaned text length: ${cleanup.cleanedTextLength}`,
     '',
-    `Removed chrome: ${hasLinkedInChrome(rawText) && !hasLinkedInChrome(cleanedText) ? 'yes' : 'no'}`,
+    `Removed chrome: ${cleanup.removedChrome ? 'yes' : 'no'}`,
     '',
-    `Mojibake repaired: ${hasMojibake(rawText) && !hasMojibake(cleanedText) ? 'yes' : 'no'}`,
+    `Mojibake repaired: ${cleanup.mojibakeRepaired ? 'yes' : 'no'}`,
     '',
     'Firecrawl skipped: yes',
     '',
@@ -294,7 +340,7 @@ function formatCleanupReview(
     '',
     '## Cleaned Text Preview',
     '',
-    excerpt(cleanedText, 1500),
+    excerpt(cleanup.cleanedText, 1500),
     '',
   ].join('\n');
 }
@@ -309,11 +355,13 @@ if (cleanupInputPath !== undefined && cleanupInputPath.trim() !== '') {
   const cleanedSourcePath = join(outputDir, 'cleaned-extracted-source.md');
   const cleanupReviewPath = join(outputDir, 'source-cleanup-review.md');
   const rawText = readFileSync(inputPath, 'utf-8');
-  const cleanedText = cleanExtractedText(rawText);
+  const cleanup = buildCleanupResult(rawText);
+
+  assertCleanedTextIsUsable(cleanup.cleanedText);
 
   mkdirSync(outputDir, { recursive: true });
-  writeFileSync(cleanedSourcePath, cleanedText, 'utf-8');
-  writeFileSync(cleanupReviewPath, formatCleanupReview(inputPath, rawText, cleanedText), 'utf-8');
+  writeFileSync(cleanedSourcePath, cleanup.cleanedText, 'utf-8');
+  writeFileSync(cleanupReviewPath, formatCleanupReview(inputPath, cleanup), 'utf-8');
 
   console.log(`source_cleanup_review_path: ${cleanupReviewPath}`);
   console.log(`cleaned_extracted_source_path: ${cleanedSourcePath}`);
@@ -430,13 +478,16 @@ if (!firecrawlHttpResponse.ok) {
 }
 
 const typedFirecrawlResponse = firecrawlResponse as FirecrawlResponse;
-const extractedText = cleanExtractedText(chooseExtractedText(typedFirecrawlResponse));
+const rawExtractedText = chooseExtractedText(typedFirecrawlResponse);
+const cleanup = buildCleanupResult(rawExtractedText);
+const cleanedText = cleanup.cleanedText;
 
-if (extractedText === '') {
+if (cleanedText === '') {
   firecrawlStatus = 'no_text_extracted';
 }
 
-writeFileSync(extractedSourcePath, extractedText, 'utf-8');
+assertCleanedTextIsUsable(cleanedText);
+writeFileSync(extractedSourcePath, cleanedText, 'utf-8');
 
 let storedInSupabase = false;
 const sourceDocumentId = sourceEvidence.source_document_id;
@@ -454,16 +505,20 @@ if (sourceDocumentId !== undefined) {
     const updateResult = await supabase
       .from('source_documents')
       .update({
-        extracted_text: extractedText,
+        extracted_text: cleanedText,
         summary: summary !== null && summary.trim() !== ''
           ? summary
-          : excerpt(extractedText, 500),
+          : excerpt(cleanedText, 500),
         raw_payload: {
           ...existingPayload,
           firecrawl: {
             extracted_at: generatedAt,
             request,
             status: firecrawlStatus,
+            raw_extracted_text_length: cleanup.rawTextLength,
+            cleaned_extracted_text_length: cleanup.cleanedTextLength,
+            removed_chrome: cleanup.removedChrome,
+            mojibake_repaired: cleanup.mojibakeRepaired,
             metadata: typedFirecrawlResponse.data?.metadata ?? null,
             raw_source_event_id: rawEventResult.data.id,
           },
@@ -479,7 +534,11 @@ if (sourceDocumentId !== undefined) {
 
 const extractionResult: ExtractionResult = {
   firecrawlStatus,
-  extractedText,
+  rawExtractedTextLength: cleanup.rawTextLength,
+  cleanedExtractedText: cleanup.cleanedText,
+  cleanedExtractedTextLength: cleanup.cleanedTextLength,
+  removedChrome: cleanup.removedChrome,
+  mojibakeRepaired: cleanup.mojibakeRepaired,
   rawResponse: firecrawlResponse,
   storedInSupabase,
   wroteExtractedSourceFile: true,
