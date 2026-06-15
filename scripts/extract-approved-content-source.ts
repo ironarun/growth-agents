@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { isAbsolute, join, resolve } from 'node:path';
 import fetch from 'node-fetch';
 import { createClient } from '@supabase/supabase-js';
 
@@ -53,6 +53,7 @@ type ExtractionResult = {
 };
 
 const firecrawlScrapeUrl = 'https://api.firecrawl.dev/v1/scrape';
+const repoRoot = process.cwd();
 
 function fail(message: string): never {
   throw new Error(message);
@@ -127,6 +128,84 @@ function chooseExtractedText(response: FirecrawlResponse): string {
     ?? '';
 }
 
+function repairMojibake(text: string): string {
+  const replacements: Array<[string, string]> = [
+    ['â€™', "'"],
+    ['â€˜', "'"],
+    ['â€œ', '"'],
+    ['â€', '"'],
+    ['â€\u009d', '"'],
+    ['â€”', ' - '],
+    ['â€“', ' - '],
+    ['â€¦', '...'],
+    ['â€¢', '-'],
+    ['â€', '"'],
+    ['Â\xa0', ' '],
+    ['Â ', ' '],
+    ['Â', ''],
+    ['Ã©', 'e'],
+    ['Ã¨', 'e'],
+    ['Ã¡', 'a'],
+    ['Ã¢', 'a'],
+    ['Ã¶', 'o'],
+    ['Ã¼', 'u'],
+    ['Ã±', 'n'],
+    ['’', "'"],
+    ['‘', "'"],
+    ['“', '"'],
+    ['”', '"'],
+    ['—', ' - '],
+    ['–', ' - '],
+    ['…', '...'],
+  ];
+
+  return replacements.reduce(
+    (repaired, [artifact, replacement]) => repaired.replaceAll(artifact, replacement),
+    text,
+  );
+}
+
+function isLinkedInChromeLine(line: string): boolean {
+  const normalized = line.toLowerCase();
+
+  return normalized.includes('agree & join linkedin')
+    || normalized.includes('by clicking continue to join or sign in')
+    || normalized.includes('user agreement')
+    || normalized.includes('privacy policy')
+    || normalized.includes('cookie policy')
+    || normalized.includes('skip to main content')
+    || normalized === 'join linkedin'
+    || normalized === 'sign in'
+    || normalized === 'join now'
+    || normalized === 'continue'
+    || normalized.startsWith('new to linkedin?')
+    || normalized.startsWith('already on linkedin?');
+}
+
+function cleanExtractedText(rawText: string): string {
+  const withoutMojibake = repairMojibake(rawText).replace(/\r\n?/g, '\n');
+  const cleanedLines = withoutMojibake
+    .split('\n')
+    .filter((line) => {
+      const trimmed = line.trim();
+
+      if (/^`{3,}$/.test(trimmed)) {
+        return false;
+      }
+
+      return !isLinkedInChromeLine(trimmed);
+    });
+
+  return cleanedLines
+    .join('\n')
+    .split('\n')
+    .map((line) => repairMojibake(line))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+$/gm, '')
+    .trim();
+}
+
 function excerpt(value: string, maxLength: number): string {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 }
@@ -175,6 +254,72 @@ function formatReview(
     'Approved for stronger brief: [ ]',
     '',
   ].join('\n');
+}
+
+function hasLinkedInChrome(value: string): boolean {
+  return value
+    .split(/\r?\n/)
+    .some((line) => isLinkedInChromeLine(line.trim()));
+}
+
+function hasMojibake(value: string): boolean {
+  return repairMojibake(value) !== value;
+}
+
+function resolveInputPath(rawPath: string): string {
+  return isAbsolute(rawPath) ? rawPath : resolve(repoRoot, rawPath);
+}
+
+function formatCleanupReview(
+  inputPath: string,
+  rawText: string,
+  cleanedText: string,
+): string {
+  return [
+    '# Source Cleanup Review',
+    '',
+    `Input path: ${inputPath}`,
+    '',
+    `Raw text length: ${rawText.length}`,
+    '',
+    `Cleaned text length: ${cleanedText.length}`,
+    '',
+    `Removed chrome: ${hasLinkedInChrome(rawText) && !hasLinkedInChrome(cleanedText) ? 'yes' : 'no'}`,
+    '',
+    `Mojibake repaired: ${hasMojibake(rawText) && !hasMojibake(cleanedText) ? 'yes' : 'no'}`,
+    '',
+    'Firecrawl skipped: yes',
+    '',
+    'Supabase skipped: yes',
+    '',
+    '## Cleaned Text Preview',
+    '',
+    excerpt(cleanedText, 1500),
+    '',
+  ].join('\n');
+}
+
+const cleanupInputPath = process.env.CLEAN_EXTRACTED_SOURCE_INPUT_PATH;
+
+if (cleanupInputPath !== undefined && cleanupInputPath.trim() !== '') {
+  const inputPath = resolveInputPath(cleanupInputPath);
+  const generatedAt = new Date().toISOString();
+  const timestamp = generatedAt.replace(/[:.]/g, '-');
+  const outputDir = join(repoRoot, 'output', `run-${timestamp}`);
+  const cleanedSourcePath = join(outputDir, 'cleaned-extracted-source.md');
+  const cleanupReviewPath = join(outputDir, 'source-cleanup-review.md');
+  const rawText = readFileSync(inputPath, 'utf-8');
+  const cleanedText = cleanExtractedText(rawText);
+
+  mkdirSync(outputDir, { recursive: true });
+  writeFileSync(cleanedSourcePath, cleanedText, 'utf-8');
+  writeFileSync(cleanupReviewPath, formatCleanupReview(inputPath, rawText, cleanedText), 'utf-8');
+
+  console.log(`source_cleanup_review_path: ${cleanupReviewPath}`);
+  console.log(`cleaned_extracted_source_path: ${cleanedSourcePath}`);
+  console.log('firecrawl_skipped: yes');
+  console.log('supabase_skipped: yes');
+  process.exit(0);
 }
 
 const supabase = createClient(
@@ -285,7 +430,7 @@ if (!firecrawlHttpResponse.ok) {
 }
 
 const typedFirecrawlResponse = firecrawlResponse as FirecrawlResponse;
-const extractedText = chooseExtractedText(typedFirecrawlResponse).trim();
+const extractedText = cleanExtractedText(chooseExtractedText(typedFirecrawlResponse));
 
 if (extractedText === '') {
   firecrawlStatus = 'no_text_extracted';
