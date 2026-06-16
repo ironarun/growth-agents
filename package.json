@@ -18,6 +18,7 @@
     "consultant:search-pain": "tsx scripts/search-consultant-ai-pain.ts",
     "consultant:extract-source": "tsx scripts/extract-approved-content-source.ts",
     "consultant:content-brief": "tsx scripts/generate-content-brief.ts",
+    "consultant:content-brief-from-source": "tsx scripts/generate-brief-from-extracted-source.ts",
     "consultant:content-draft": "tsx scripts/generate-content-draft.ts",
     "consultant:content-edit-review": "tsx scripts/review-content-draft.ts",
     "consultant:content-rewrite": "tsx scripts/rewrite-content-draft.ts",
