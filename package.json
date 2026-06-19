@@ -25,7 +25,8 @@
     "consultant:content-rewrite": "tsx scripts/rewrite-content-draft.ts",
     "consultant:ad-review": "tsx scripts/generate-consultant-ad-review.ts",
     "consultant:replacement-examples": "tsx scripts/retrieve-replacement-examples.ts",
-    "consultant:log-published-artifact": "tsx scripts/log-published-artifact.ts"
+    "consultant:log-published-artifact": "tsx scripts/log-published-artifact.ts",
+    "consultant:linkedin-distribution-draft": "tsx scripts/generate-linkedin-distribution-draft.ts"
   },
   "keywords": [],
   "author": "",
