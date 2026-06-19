@@ -30,6 +30,17 @@ type SourceDocument = {
   extracted_text: string | null;
 };
 
+type SourceAuthorityStrategy = {
+  sourceAuthorityTier: 'major outlet' | 'institution' | 'established expert' | 'low-authority individual' | 'unknown';
+  basisForTier: string;
+  attributionValue: 'borrow credibility' | 'borrow distribution' | 'idea trigger only' | 'avoid naming';
+  recommendedAttributionStrategy: 'name directly' | 'mention generally' | 'do not attribute';
+  derivativeRisk: 'low' | 'medium' | 'high';
+  loadBearingBorrowedElements: string[];
+  independentReplacementNeeded: 'yes' | 'no';
+  notesForHumanReviewer: string;
+};
+
 function fail(message: string): never {
   throw new Error(message);
 }
@@ -304,6 +315,175 @@ function assertBulletQuality(sectionName: string, bullets: string[], expectedCou
   }
 }
 
+function sourceAuthorityStrategy(sourceDocument: SourceDocument, evidence: SourceEvidence, extractedText: string): SourceAuthorityStrategy {
+  const domain = (sourceDocument.domain ?? evidence.domain ?? '').toLowerCase();
+  const title = (sourceDocument.title ?? evidence.title ?? '').toLowerCase();
+  const source = cleanSourceForBrief(extractedText);
+  const hasRecognizedInstitution = [
+    'mckinsey.com',
+    'bcg.com',
+    'bain.com',
+    'hbr.org',
+    'harvard.edu',
+    'stanford.edu',
+    'mit.edu',
+    'nist.gov',
+    'oecd.org',
+    'weforum.org',
+  ].some((recognizedDomain) => domain.endsWith(recognizedDomain));
+  const isMajorOutlet = [
+    'nytimes.com',
+    'wsj.com',
+    'ft.com',
+    'economist.com',
+    'theatlantic.com',
+    'technologyreview.com',
+    'wired.com',
+  ].some((recognizedDomain) => domain.endsWith(recognizedDomain));
+  const isLinkedIn = domain.includes('linkedin.com');
+  const hasBorrowedConcreteFrame = includesAny(source, ['truth layer', 'risk tier', 'low risk', 'medium risk', 'high risk', 'critical risk', 'lawsuit', 'liability']);
+
+  if (hasRecognizedInstitution) {
+    return {
+      sourceAuthorityTier: 'institution',
+      basisForTier: `Domain ${domain} appears to be an institutional or research source.`,
+      attributionValue: 'borrow credibility',
+      recommendedAttributionStrategy: 'name directly',
+      derivativeRisk: hasBorrowedConcreteFrame ? 'medium' : 'low',
+      loadBearingBorrowedElements: loadBearingElements(source),
+      independentReplacementNeeded: hasBorrowedConcreteFrame ? 'yes' : 'no',
+      notesForHumanReviewer: 'Naming is likely acceptable, but concrete examples and phrases should still be attributed or independently replaced.',
+    };
+  }
+
+  if (isMajorOutlet) {
+    return {
+      sourceAuthorityTier: 'major outlet',
+      basisForTier: `Domain ${domain} appears to be a major media source.`,
+      attributionValue: 'borrow credibility',
+      recommendedAttributionStrategy: 'name directly',
+      derivativeRisk: hasBorrowedConcreteFrame ? 'medium' : 'low',
+      loadBearingBorrowedElements: loadBearingElements(source),
+      independentReplacementNeeded: hasBorrowedConcreteFrame ? 'yes' : 'no',
+      notesForHumanReviewer: 'Naming is likely useful if the final article relies on the reporting or framing.',
+    };
+  }
+
+  if (isLinkedIn) {
+    return {
+      sourceAuthorityTier: 'low-authority individual',
+      basisForTier: `Domain ${domain} is a LinkedIn post. No recognized institution, publication, or author authority signal is available in the warehouse record.`,
+      attributionValue: 'idea trigger only',
+      recommendedAttributionStrategy: 'do not attribute',
+      derivativeRisk: hasBorrowedConcreteFrame ? 'medium' : 'low',
+      loadBearingBorrowedElements: loadBearingElements(source),
+      independentReplacementNeeded: hasBorrowedConcreteFrame ? 'yes' : 'no',
+      notesForHumanReviewer: 'Use the source to trigger the idea, but avoid naming it in the public draft unless directly replying to the post.',
+    };
+  }
+
+  if (title.includes('by ') || domain !== '') {
+    return {
+      sourceAuthorityTier: 'unknown',
+      basisForTier: `Domain ${domain || 'unknown'} does not provide enough authority signal in the current warehouse record.`,
+      attributionValue: 'idea trigger only',
+      recommendedAttributionStrategy: 'mention generally',
+      derivativeRisk: hasBorrowedConcreteFrame ? 'medium' : 'low',
+      loadBearingBorrowedElements: loadBearingElements(source),
+      independentReplacementNeeded: hasBorrowedConcreteFrame ? 'yes' : 'no',
+      notesForHumanReviewer: 'Mention the idea generally unless a human confirms the source is worth naming.',
+    };
+  }
+
+  return {
+    sourceAuthorityTier: 'unknown',
+    basisForTier: 'No reliable source authority signal is available in the current warehouse record.',
+    attributionValue: 'avoid naming',
+    recommendedAttributionStrategy: 'do not attribute',
+    derivativeRisk: hasBorrowedConcreteFrame ? 'medium' : 'low',
+    loadBearingBorrowedElements: loadBearingElements(source),
+    independentReplacementNeeded: hasBorrowedConcreteFrame ? 'yes' : 'no',
+    notesForHumanReviewer: 'Treat as background signal only until authority can be verified.',
+  };
+}
+
+function loadBearingElements(source: string): string[] {
+  const elements: string[] = [];
+
+  if (includesAny(source, ['verification gap'])) {
+    elements.push('The phrase "verification gap" appears in the source. It can be used as a general concept, but the draft should not imply the source coined it unless verified.');
+  }
+
+  if (includesAny(source, ['truth layer'])) {
+    elements.push('The phrase "truth layer" appears to come from the source and should not become Verbatim positioning.');
+  }
+
+  if (includesAny(source, ['low risk', 'medium risk', 'high risk', 'critical risk', 'risk tier'])) {
+    elements.push('The risk-tier framing appears to come from the source and should be simplified or replaced with independent examples.');
+  }
+
+  if (includesAny(source, ['lawsuit', 'liability'])) {
+    elements.push('Legal-liability examples appear to come from the source and require attribution or independent verification.');
+  }
+
+  return elements.length > 0 ? elements : ['No specific borrowed phrase or example appears load-bearing from the current extracted text.'];
+}
+
+function formatAuthorityStrategy(strategy: SourceAuthorityStrategy): string[] {
+  return [
+    '## Source Authority And Attribution Strategy',
+    '',
+    `Source authority tier: ${strategy.sourceAuthorityTier}`,
+    '',
+    `Basis for tier: ${strategy.basisForTier}`,
+    '',
+    `Attribution value: ${strategy.attributionValue}`,
+    '',
+    `Recommended attribution strategy: ${strategy.recommendedAttributionStrategy}`,
+    '',
+    `Derivative risk: ${strategy.derivativeRisk}`,
+    '',
+    'Load-bearing borrowed elements:',
+    ...strategy.loadBearingBorrowedElements.map((element) => `- ${element}`),
+    '',
+    `Independent replacement needed: ${strategy.independentReplacementNeeded}`,
+    '',
+    `Notes for human reviewer: ${strategy.notesForHumanReviewer}`,
+    '',
+  ];
+}
+
+function formatReplacementExampleNeed(strategy: SourceAuthorityStrategy): string[] {
+  if (strategy.independentReplacementNeeded !== 'yes') {
+    return [];
+  }
+
+  const elementsToReplace = strategy.loadBearingBorrowedElements.filter((element) => !element.includes('"verification gap"'));
+
+  return [
+    '## Replacement Example Need',
+    '',
+    'Replacement needed: yes',
+    '',
+    'Reason: borrowed example or framing would be derivative if attribution is dropped.',
+    '',
+    'What needs replacing:',
+    ...(elementsToReplace.length > 0 ? elementsToReplace.map((element) => `- ${element}`) : ['- Source-specific examples or framing that would require attribution if used directly.']),
+    '',
+    'Replacement source requirements: major outlet, institutional report, official filing, court/regulatory record, company statement, or other higher-authority source.',
+    '',
+    'Suggested retrieval queries:',
+    '- "AI output verification legal risk business"',
+    '- "AI governance review AI outputs before decision"',
+    '- "AI hallucination professional services client deliverable"',
+    '- "AI generated business advice risk verification"',
+    '- "AI output validation enterprise workflow"',
+    '',
+    'Human reviewer note: do not publish until an independent example is selected or the example is removed.',
+    '',
+  ];
+}
+
 function formatBrief(
   generatedAt: string,
   workflowRunId: string,
@@ -316,6 +496,7 @@ function formatBrief(
   const domain = sourceDocument.domain ?? evidence.domain ?? 'No domain stored';
   const summaryBullets = dedupeBullets(sourceSummary(extractedText));
   const cautiousClaimBullets = dedupeBullets(cautiousClaims(extractedText));
+  const authorityStrategy = sourceAuthorityStrategy(sourceDocument, evidence, extractedText);
 
   assertBulletQuality('Source Summary', summaryBullets, 5, 220);
   assertBulletQuality('Source Claims To Use Carefully', cautiousClaimBullets, 6, 260);
@@ -343,6 +524,8 @@ function formatBrief(
     '',
     ...cautiousClaimBullets,
     '',
+    ...formatAuthorityStrategy(authorityStrategy),
+    ...formatReplacementExampleNeed(authorityStrategy),
     '## Verbatim Angle',
     '',
     'AI creates confident work faster than humans can verify it. Verbatim creates the adversarial review layer for moments where trust matters.',

@@ -65,7 +65,23 @@ Finds the latest `content-draft.md` and `content-edit-review.md`, then creates a
 
 The workflow should produce better judgment, not remove judgment.
 
-## 6. Current Limitations
+## 6. Source Authority Gate
+
+Relevance is not authority. Extraction is not endorsement.
+
+Some sources are useful because they reveal a live audience pain, phrase, or frame, but naming them would add no credibility and may create reader friction. The workflow should decide whether a source should be named directly, mentioned generally, or treated only as an idea trigger.
+
+Major outlets, institutional research, official docs, and established experts may be named when they add credibility. Low-authority individual posts should usually trigger ideas without attribution unless the piece is directly responding to that post.
+
+If a concrete example, phrase, or frame is borrowed from a low-authority source, the brief should flag derivative risk and recommend replacing it with independent framing before publication.
+
+Known failure mode: removal without replacement. The system may correctly drop attribution from a low-authority source, but produce a thinner draft because the concrete example was removed instead of replaced. When that happens, the brief should flag that replacement-example retrieval is needed.
+
+Replacement-example retrieval is a future step. It should look for higher-authority sources such as major outlets, institutional reports, official filings, court or regulatory records, company statements, or recognized expert sources before the piece moves toward publication.
+
+Human review remains final.
+
+## 7. Current Limitations
 
 - Search uses Serper snippets only.
 - No Firecrawl extraction yet.
@@ -75,7 +91,7 @@ The workflow should produce better judgment, not remove judgment.
 - No Meta upload.
 - No autopublishing.
 
-## 7. Next Likely Additions
+## 8. Next Likely Additions
 
 - Firecrawl extraction for one approved source.
 - Publish-ready markdown export.
@@ -84,7 +100,7 @@ The workflow should produce better judgment, not remove judgment.
 - Daily Atlas-run workflow.
 - Telegram operation after the local workflow stabilizes.
 
-## 8. Safety Rules
+## 9. Safety Rules
 
 - Do not expose secrets.
 - Do not publish automatically.
@@ -93,7 +109,7 @@ The workflow should produce better judgment, not remove judgment.
 - Do not touch `ai-highlighter` unless explicitly assigned.
 - Keep generated output human-reviewable.
 
-## 9. Example Command Sequence
+## 10. Example Command Sequence
 
 ```powershell
 npm.cmd run consultant:search-pain
