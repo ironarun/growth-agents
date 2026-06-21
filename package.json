@@ -28,7 +28,8 @@
     "consultant:log-published-artifact": "tsx scripts/log-published-artifact.ts",
     "consultant:linkedin-distribution-draft": "tsx scripts/generate-linkedin-distribution-draft.ts",
     "consultant:log-distribution-performance": "tsx scripts/log-distribution-performance.ts",
-    "consultant:missing-layer-comment": "tsx scripts/generate-missing-layer-comment.ts"
+    "consultant:missing-layer-comment": "tsx scripts/generate-missing-layer-comment.ts",
+    "consultant:extract-replacement-source": "tsx scripts/extract-replacement-source.ts"
   },
   "keywords": [],
   "author": "",
