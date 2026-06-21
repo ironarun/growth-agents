@@ -31,7 +31,8 @@
     "consultant:missing-layer-comment": "tsx scripts/generate-missing-layer-comment.ts",
     "consultant:extract-replacement-source": "tsx scripts/extract-replacement-source.ts",
     "consultant:rewrite-with-approved-replacement": "tsx scripts/rewrite-with-approved-replacement.ts",
-    "consultant:distribution-performance-review": "tsx scripts/review-distribution-performance.ts"
+    "consultant:distribution-performance-review": "tsx scripts/review-distribution-performance.ts",
+    "consultant:ingest-linkedin-analytics": "tsx scripts/ingest-linkedin-analytics-export.ts"
   },
   "keywords": [],
   "author": "",
@@ -41,7 +42,8 @@
     "@anthropic-ai/sdk": "^0.96.0",
     "@supabase/supabase-js": "^2.106.1",
     "dotenv": "^17.4.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

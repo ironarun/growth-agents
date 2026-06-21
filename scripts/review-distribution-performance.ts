@@ -7,6 +7,7 @@ type Metrics = {
   comments: number | null;
   reposts: number | null;
   clicks: number | null;
+  linkEngagements: number | null;
 };
 
 type DistributionPerformance = {
@@ -27,9 +28,18 @@ type DistributionPerformance = {
 type Review = {
   distributionStatus: string;
   sufficientData: boolean;
+  dataSufficiency: 'yes' | 'limited' | 'no';
   conclusions: string[];
   cannotConclude: string[];
   recommendedNextAction: string;
+};
+
+type LinkedInAnalyticsSnapshot = {
+  path: string;
+  postUrl: string;
+  postDate: string;
+  postPublishTime: string;
+  metrics: Metrics;
 };
 
 const repoRoot = process.cwd();
@@ -55,6 +65,24 @@ function findLatestFile(fileName: string): string {
     .sort((a, b) => b.mtimeMs - a.mtimeMs);
 
   return candidates[0]?.path ?? fail(`No ${fileName} found under output/run-*/.`);
+}
+
+function findLatestFileOrNull(fileName: string): string | null {
+  if (!existsSync(outputRoot)) {
+    return null;
+  }
+
+  const candidates = readdirSync(outputRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('run-'))
+    .map((entry) => join(outputRoot, entry.name, fileName))
+    .filter((path) => existsSync(path))
+    .map((path) => ({
+      path,
+      mtimeMs: statSync(path).mtimeMs,
+    }))
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+  return candidates[0]?.path ?? null;
 }
 
 function readField(markdown: string, label: string): string {
@@ -135,6 +163,7 @@ function parseDistributionPerformance(path: string, markdown: string): Distribut
     comments: readField(earlyMetrics, '- Comments') || 'unknown',
     reposts: readField(earlyMetrics, '- Reposts') || 'unknown',
     clicks: readField(earlyMetrics, '- Clicks') || 'unknown',
+    linkEngagements: 'unknown',
   };
 
   return {
@@ -151,6 +180,7 @@ function parseDistributionPerformance(path: string, markdown: string): Distribut
       comments: parseMetric(rawMetricLabels.comments),
       reposts: parseMetric(rawMetricLabels.reposts),
       clicks: parseMetric(rawMetricLabels.clicks),
+      linkEngagements: null,
     },
     rawMetricLabels,
     notes: readSection(markdown, 'Notes'),
@@ -160,7 +190,75 @@ function parseDistributionPerformance(path: string, markdown: string): Distribut
 }
 
 function metricValues(metrics: Metrics): Array<number | null> {
-  return [metrics.impressions, metrics.reactions, metrics.comments, metrics.reposts, metrics.clicks];
+  return [metrics.impressions, metrics.reactions, metrics.comments, metrics.reposts, metrics.clicks, metrics.linkEngagements];
+}
+
+function readMarkdownTableValue(markdown: string, label: string): string {
+  const line = markdown
+    .split(/\r?\n/)
+    .find((candidate) => {
+      const cells = candidate.split('|').map((cell) => cell.trim()).filter(Boolean);
+      return cells[0]?.toLowerCase() === label.toLowerCase();
+    });
+
+  if (line === undefined) {
+    return '';
+  }
+
+  const cells = line.split('|').map((cell) => cell.trim()).filter(Boolean);
+  return cells[1] ?? '';
+}
+
+function parseLinkedInAnalyticsSnapshot(path: string, markdown: string): LinkedInAnalyticsSnapshot {
+  return {
+    path,
+    postUrl: readField(markdown, 'Post URL'),
+    postDate: readField(markdown, 'Post date'),
+    postPublishTime: readField(markdown, 'Post publish time'),
+    metrics: {
+      impressions: parseMetric(readMarkdownTableValue(markdown, 'Impressions')),
+      reactions: parseMetric(readMarkdownTableValue(markdown, 'Reactions')),
+      comments: parseMetric(readMarkdownTableValue(markdown, 'Comments')),
+      reposts: parseMetric(readMarkdownTableValue(markdown, 'Reposts')),
+      clicks: null,
+      linkEngagements: parseMetric(readMarkdownTableValue(markdown, 'Link engagements')),
+    },
+  };
+}
+
+function applySnapshot(performance: DistributionPerformance, snapshot: LinkedInAnalyticsSnapshot | null): DistributionPerformance {
+  if (snapshot === null) {
+    return performance;
+  }
+
+  const useSnapshotStatus = isPendingValue(performance.distributionUrl) || isPendingValue(performance.publishedAt);
+
+  return {
+    ...performance,
+    distributionUrl: useSnapshotStatus ? snapshot.postUrl : performance.distributionUrl,
+    publishedAt: useSnapshotStatus ? [snapshot.postDate, snapshot.postPublishTime].filter((value) => value !== '' && value !== 'not provided').join(' ') : performance.publishedAt,
+    metrics: {
+      impressions: snapshot.metrics.impressions ?? performance.metrics.impressions,
+      reactions: snapshot.metrics.reactions ?? performance.metrics.reactions,
+      comments: snapshot.metrics.comments ?? performance.metrics.comments,
+      reposts: snapshot.metrics.reposts ?? performance.metrics.reposts,
+      clicks: performance.metrics.clicks,
+      linkEngagements: snapshot.metrics.linkEngagements,
+    },
+    rawMetricLabels: {
+      impressions: snapshot.metrics.impressions === null ? performance.rawMetricLabels.impressions : String(snapshot.metrics.impressions),
+      reactions: snapshot.metrics.reactions === null ? performance.rawMetricLabels.reactions : String(snapshot.metrics.reactions),
+      comments: snapshot.metrics.comments === null ? performance.rawMetricLabels.comments : String(snapshot.metrics.comments),
+      reposts: snapshot.metrics.reposts === null ? performance.rawMetricLabels.reposts : String(snapshot.metrics.reposts),
+      clicks: performance.rawMetricLabels.clicks,
+      linkEngagements: snapshot.metrics.linkEngagements === null ? 'unknown' : String(snapshot.metrics.linkEngagements),
+    },
+    notes: [
+      performance.notes,
+      `LinkedIn analytics snapshot imported from: ${snapshot.path}`,
+      'Clicks were not inferred from Link engagements.',
+    ].filter(Boolean).join('\n\n'),
+  };
 }
 
 function hasAnyKnownMetric(metrics: Metrics): boolean {
@@ -193,6 +291,7 @@ function reviewPerformance(performance: DistributionPerformance): Review {
     return {
       distributionStatus: 'not published or not logged',
       sufficientData: false,
+      dataSufficiency: 'no',
       conclusions: [
         'The distribution log still has a pending URL or pending published date.',
         hasQualitativeNotes(performance)
@@ -211,6 +310,7 @@ function reviewPerformance(performance: DistributionPerformance): Review {
     return {
       distributionStatus: 'published manually, performance data insufficient',
       sufficientData: false,
+      dataSufficiency: 'no',
       conclusions: hasQualitativeNotes(performance)
         ? ['Qualitative notes are logged and should be treated as directional, not performance proof.']
         : ['The post appears to have a real URL/date, but no meaningful metrics are logged yet.'],
@@ -226,17 +326,43 @@ function reviewPerformance(performance: DistributionPerformance): Review {
   const reactions = performance.metrics.reactions ?? 0;
   const reposts = performance.metrics.reposts ?? 0;
   const clicks = performance.metrics.clicks ?? 0;
+  const linkEngagements = performance.metrics.linkEngagements ?? 0;
   const impressions = performance.metrics.impressions ?? 0;
-  const engagementCount = comments + reactions + reposts + clicks;
+  const engagementCount = comments + reactions + reposts + clicks + linkEngagements;
   const hasCommentSignal = comments > 0;
+  const hasVeryLowImpressions = performance.metrics.impressions !== null && impressions < 200;
   const hasStrongSignal = engagementCount >= 10 || comments >= 2 || clicks >= 3;
+
+  if (hasVeryLowImpressions) {
+    return {
+      distributionStatus: 'published manually, early weak signal',
+      sufficientData: false,
+      dataSufficiency: 'limited',
+      conclusions: [
+        `LinkedIn analytics show a very small sample: ${impressions} impressions.`,
+        `Logged engagement is ${engagementCount} combined reactions, comments, reposts, clicks, and link engagements.`,
+        comments === 1
+          ? 'The single logged comment may be worth reviewing manually, but it is not enough to infer audience response.'
+          : comments === 0 && linkEngagements === 0
+            ? 'No comments or link engagements are logged, so this should not trigger a content follow-up.'
+            : 'The engagement should be treated as directional only until the sample is larger.',
+      ],
+      cannotConclude: [
+        'The sample is too small to judge the article, the distribution angle, or audience fit.',
+        'No confident next content/action recommendation should be chosen from 52 impressions and no qualitative notes.',
+        'Clicks remain unknown and were not inferred from LinkedIn link engagements.',
+      ],
+      recommendedNextAction: 'Wait for more data and re-export LinkedIn analytics after a larger sample or later snapshot. If weak performance persists after a larger sample, test a sharper distribution angle around the concrete KPMG incident and process-failure frame.',
+    };
+  }
 
   if (hasStrongSignal) {
     return {
       distributionStatus: 'published manually, performance signal present',
       sufficientData: true,
+      dataSufficiency: 'yes',
       conclusions: [
-        `Logged metrics show ${engagementCount} combined reactions, comments, reposts, and clicks${impressions > 0 ? ` on ${impressions} impressions` : ''}.`,
+        `Logged metrics show ${engagementCount} combined reactions, comments, reposts, clicks, and link engagements${impressions > 0 ? ` on ${impressions} impressions` : ''}.`,
         hasCommentSignal
           ? 'Comments are present and should be reviewed for possible content opportunities or reply opportunities.'
           : 'The strongest signal is non-comment engagement, so next action should stay lightweight until comment quality is known.',
@@ -253,9 +379,10 @@ function reviewPerformance(performance: DistributionPerformance): Review {
 
   return {
     distributionStatus: 'published manually, weak early signal',
-    sufficientData: true,
+    sufficientData: false,
+    dataSufficiency: 'limited',
     conclusions: [
-      `Some real metrics are logged, but the early signal is weak: ${engagementCount} combined reactions, comments, reposts, and clicks.`,
+      `Some real metrics are logged, but the early signal is weak: ${engagementCount} combined reactions, comments, reposts, clicks, and link engagements.`,
       hasQualitativeNotes(performance)
         ? 'Qualitative notes may explain whether the weak signal is expected, timing-related, or angle-related.'
         : 'No qualitative explanation is logged.',
@@ -264,7 +391,7 @@ function reviewPerformance(performance: DistributionPerformance): Review {
       'The log is not enough to judge the article itself.',
       'The log is not enough to decide whether the distribution angle or timing caused weak performance.',
     ],
-    recommendedNextAction: 'Wait for more data or test a sharper distribution angle that opens with the concrete KPMG incident and the process-failure frame.',
+    recommendedNextAction: 'Wait for more data and re-export LinkedIn analytics after a later snapshot. If weak performance persists, test a sharper distribution angle that opens with the concrete KPMG incident and the process-failure frame.',
   };
 }
 
@@ -272,6 +399,7 @@ function formatMarkdown(
   generatedAt: string,
   publishedArtifactPath: string,
   distributionDraftPath: string,
+  analyticsSnapshotPath: string | null,
   performance: DistributionPerformance,
   review: Review,
 ): string {
@@ -285,6 +413,7 @@ function formatMarkdown(
     `- Published artifact path: ${publishedArtifactPath}`,
     `- LinkedIn distribution draft path: ${distributionDraftPath}`,
     `- Distribution performance path: ${performance.path}`,
+    `- LinkedIn analytics snapshot path: ${analyticsSnapshotPath ?? 'Not available'}`,
     '',
     '## Distribution Status',
     '',
@@ -301,6 +430,7 @@ function formatMarkdown(
     `- Comments: ${formatMetric(performance.metrics.comments, performance.rawMetricLabels.comments)}`,
     `- Reposts: ${formatMetric(performance.metrics.reposts, performance.rawMetricLabels.reposts)}`,
     `- Clicks: ${formatMetric(performance.metrics.clicks, performance.rawMetricLabels.clicks)}`,
+    `- Link engagements: ${formatMetric(performance.metrics.linkEngagements, performance.rawMetricLabels.linkEngagements)}`,
     '',
     '## Qualitative Notes Read From Performance Log',
     '',
@@ -319,7 +449,7 @@ function formatMarkdown(
     '',
     '## Data Sufficiency',
     '',
-    `- Sufficient for next content/action recommendation: ${review.sufficientData ? 'yes' : 'no'}`,
+    `- Sufficient for next content/action recommendation: ${review.dataSufficiency}`,
     '',
     '## Recommended Next Action',
     '',
@@ -338,8 +468,12 @@ function formatMarkdown(
 const publishedArtifactPath = resolve(findLatestFile('published-artifact.md'));
 const distributionDraftPath = resolve(findLatestFile('linkedin-distribution-draft.md'));
 const distributionPerformancePath = resolve(findLatestFile('distribution-performance.md'));
+const analyticsSnapshotPath = findLatestFileOrNull('linkedin-analytics-snapshot.md');
 const performanceMarkdown = readFileSync(distributionPerformancePath, 'utf-8');
-const performance = parseDistributionPerformance(distributionPerformancePath, performanceMarkdown);
+const analyticsSnapshot = analyticsSnapshotPath === null
+  ? null
+  : parseLinkedInAnalyticsSnapshot(resolve(analyticsSnapshotPath), readFileSync(resolve(analyticsSnapshotPath), 'utf-8'));
+const performance = applySnapshot(parseDistributionPerformance(distributionPerformancePath, performanceMarkdown), analyticsSnapshot);
 const review = reviewPerformance(performance);
 const generatedAt = new Date().toISOString();
 const timestamp = generatedAt.replace(/[:.]/g, '-');
@@ -347,9 +481,10 @@ const outputDir = join(repoRoot, 'output', `run-${timestamp}`);
 const outputPath = join(outputDir, 'distribution-performance-review.md');
 
 mkdirSync(outputDir, { recursive: true });
-writeFileSync(outputPath, formatMarkdown(generatedAt, publishedArtifactPath, distributionDraftPath, performance, review), 'utf-8');
+writeFileSync(outputPath, formatMarkdown(generatedAt, publishedArtifactPath, distributionDraftPath, analyticsSnapshotPath === null ? null : resolve(analyticsSnapshotPath), performance, review), 'utf-8');
 
 console.log(`distribution_performance_review_path: ${outputPath}`);
 console.log(`distribution_performance_path: ${distributionPerformancePath}`);
-console.log(`sufficient_data: ${review.sufficientData ? 'yes' : 'no'}`);
+console.log(`linkedin_analytics_snapshot_path: ${analyticsSnapshotPath ?? 'not_available'}`);
+console.log(`sufficient_data: ${review.dataSufficiency}`);
 console.log(`recommended_next_action: ${review.recommendedNextAction}`);
