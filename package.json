@@ -33,7 +33,8 @@
     "consultant:rewrite-with-approved-replacement": "tsx scripts/rewrite-with-approved-replacement.ts",
     "consultant:distribution-performance-review": "tsx scripts/review-distribution-performance.ts",
     "consultant:ingest-linkedin-analytics": "tsx scripts/ingest-linkedin-analytics-export.ts",
-    "consultant:paid-ads-funnel-readiness": "tsx scripts/generate-paid-ads-funnel-readiness-checklist.ts"
+    "consultant:paid-ads-funnel-readiness": "tsx scripts/generate-paid-ads-funnel-readiness-checklist.ts",
+    "consultant:paid-ads-creative-render-manifest": "tsx scripts/generate-paid-ads-creative-render-manifest.ts"
   },
   "keywords": [],
   "author": "",
