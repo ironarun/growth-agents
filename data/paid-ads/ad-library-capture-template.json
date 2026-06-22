@@ -1,0 +1,42 @@
+{
+  "captureVersion": "2026-06-22-v0",
+  "captureStatus": "placeholder_template",
+  "capturedAt": null,
+  "researcher": "TBD",
+  "source": "manual_meta_ad_library_research",
+  "notes": [
+    "This file is a template for human or browser-agent capture from Meta Ad Library.",
+    "Do not treat placeholder examples as evidence.",
+    "Copy this file to a new JSON file and replace placeholder records with real captured ads before drawing conclusions."
+  ],
+  "examples": [
+    {
+      "isPlaceholder": true,
+      "advertiser": "PLACEHOLDER_ADVERTISER",
+      "adLibraryUrl": "PLACEHOLDER_META_AD_LIBRARY_URL",
+      "platform": [
+        "facebook",
+        "instagram"
+      ],
+      "activeStatus": "unknown",
+      "startDateIfVisible": null,
+      "longevitySignal": "placeholder_only",
+      "visualFormat": "placeholder_only",
+      "hookType": "placeholder_only",
+      "offerType": "placeholder_only",
+      "cta": "placeholder_only",
+      "landingPage": "PLACEHOLDER_LANDING_PAGE",
+      "visibleCopy": {
+        "primaryText": "PLACEHOLDER_VISIBLE_PRIMARY_TEXT",
+        "headline": "PLACEHOLDER_VISIBLE_HEADLINE",
+        "description": "PLACEHOLDER_VISIBLE_DESCRIPTION"
+      },
+      "screenshotPath": null,
+      "whyThisAdMayBeWorking": "PLACEHOLDER_ONLY. Replace with a human note after observing a real ad.",
+      "patternTags": [
+        "placeholder"
+      ],
+      "relevanceToVerbatim": "PLACEHOLDER_ONLY. Replace with a real relevance note."
+    }
+  ]
+}
