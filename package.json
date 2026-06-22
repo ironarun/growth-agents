@@ -36,7 +36,8 @@
     "consultant:paid-ads-funnel-readiness": "tsx scripts/generate-paid-ads-funnel-readiness-checklist.ts",
     "consultant:paid-ads-creative-render-manifest": "tsx scripts/generate-paid-ads-creative-render-manifest.ts",
     "consultant:paid-ads-render-static": "tsx scripts/render-paid-ads-static-image.ts",
-    "consultant:paid-ads-analyze-creative-patterns": "tsx scripts/analyze-paid-ads-creative-patterns.ts"
+    "consultant:paid-ads-analyze-creative-patterns": "tsx scripts/analyze-paid-ads-creative-patterns.ts",
+    "agent:paid-ads": "tsx scripts/run-paid-ads-agent.ts"
   },
   "keywords": [],
   "author": "",

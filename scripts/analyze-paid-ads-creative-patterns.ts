@@ -9,6 +9,8 @@ type VisibleCopy = {
 
 type AdLibraryExample = {
   isPlaceholder?: boolean;
+  isPartialCapture?: boolean;
+  extractionStatus?: string;
   advertiser: string;
   adLibraryUrl: string;
   platform: string[];
@@ -174,6 +176,8 @@ function validateExample(value: unknown, exampleIndex: number): AdLibraryExample
 
   return {
     isPlaceholder: value.isPlaceholder === true,
+    isPartialCapture: value.isPartialCapture === true,
+    ...(typeof value.extractionStatus === 'string' ? { extractionStatus: value.extractionStatus } : {}),
     advertiser: String(value.advertiser),
     adLibraryUrl: String(value.adLibraryUrl),
     platform: value.platform.map((item) => String(item)),
@@ -231,7 +235,12 @@ function isRealExample(example: AdLibraryExample): boolean {
     example.relevanceToVerbatim,
   ];
 
-  return example.isPlaceholder !== true && !inspectedFields.some(looksPlaceholder);
+  return (
+    example.isPlaceholder !== true &&
+    example.isPartialCapture !== true &&
+    example.extractionStatus !== 'needs_browser_capture' &&
+    !inspectedFields.some(looksPlaceholder)
+  );
 }
 
 function countPatterns(examples: AdLibraryExample[], getValue: (example: AdLibraryExample) => string): PatternCount[] {
