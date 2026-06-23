@@ -11,6 +11,15 @@ export type SkillStatus =
   | 'unsupported'
   | 'not_run';
 
+export type AgentSkillSummary = {
+  source_type?: string;
+  library_id?: string | null;
+  modal_capture_status?: string;
+  extraction_status?: string;
+  screenshot_paths?: string[];
+  visible_text_paths?: string[];
+};
+
 export type AgentRun = {
   run_id: string;
   created_at: string;
@@ -23,6 +32,7 @@ export type AgentRun = {
   artifact_paths: string[];
   next_action: string;
   human_review_required: true;
+  skill_summary?: AgentSkillSummary;
 };
 
 export type AgentSkillResult = {
@@ -30,6 +40,7 @@ export type AgentSkillResult = {
   skillStatus: SkillStatus;
   artifactPaths: string[];
   nextAction: string;
+  summary?: AgentSkillSummary;
 };
 
 export type AgentRuntimeContext = {

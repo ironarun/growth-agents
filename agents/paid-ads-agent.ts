@@ -38,6 +38,9 @@ function parseIntent(urls: string[]): ParsedIntent {
 }
 
 function formatAgentRunMarkdown(run: AgentRun): string {
+  const screenshotPaths = run.skill_summary?.screenshot_paths ?? [];
+  const visibleTextPaths = run.skill_summary?.visible_text_paths ?? [];
+
   return `# Paid Ads Agent Run
 
 Run ID: ${run.run_id}
@@ -55,6 +58,18 @@ ${run.user_instruction}
 - URLs: ${run.urls.length > 0 ? run.urls.join(', ') : 'none'}
 - Selected skill: ${run.selected_skill ?? 'none'}
 - Skill status: ${run.skill_status}
+- Source type: ${run.skill_summary?.source_type ?? 'unknown'}
+- Library ID: ${run.skill_summary?.library_id ?? 'not found'}
+- Modal capture status: ${run.skill_summary?.modal_capture_status ?? 'not attempted'}
+- Extraction status: ${run.skill_summary?.extraction_status ?? 'unknown'}
+
+## Screenshot Paths
+
+${screenshotPaths.length > 0 ? screenshotPaths.map((path) => `- ${path}`).join('\n') : '- None'}
+
+## Visible Text Paths
+
+${visibleTextPaths.length > 0 ? visibleTextPaths.map((path) => `- ${path}`).join('\n') : '- None'}
 
 ## Artifacts
 
@@ -115,19 +130,29 @@ ${userInstruction}
 function formatTerminalResponse(run: AgentRun): string {
   const sourceUrl = run.urls[0] ?? 'none';
   const artifacts = run.artifact_paths.map((path) => `  - ${path}`).join('\n');
+  const screenshotPaths = run.skill_summary?.screenshot_paths ?? [];
+  const visibleTextPaths = run.skill_summary?.visible_text_paths ?? [];
 
   return `Agent: ${run.agent_name}
 Intent: ${run.parsed_intent}
 Source URL: ${sourceUrl}
+Source type: ${run.skill_summary?.source_type ?? 'unknown'}
+Library ID: ${run.skill_summary?.library_id ?? 'not found'}
 Selected skill: ${run.selected_skill ?? 'none'}
 Capture status: ${run.skill_status}
+Modal capture status: ${run.skill_summary?.modal_capture_status ?? 'not attempted'}
+Extraction status: ${run.skill_summary?.extraction_status ?? 'unknown'}
+Screenshot paths:
+${screenshotPaths.length > 0 ? screenshotPaths.map((path) => `  - ${path}`).join('\n') : '  - none'}
+Visible text paths:
+${visibleTextPaths.length > 0 ? visibleTextPaths.map((path) => `  - ${path}`).join('\n') : '  - none'}
 Artifacts written:
 ${artifacts || '  - none'}
 Next action: ${run.next_action}
 Human review required: ${run.human_review_required}`;
 }
 
-export function runPaidAdsAgent(userInstruction: string, repoRoot = process.cwd()): PaidAdsAgentResult {
+export async function runPaidAdsAgent(userInstruction: string, repoRoot = process.cwd()): Promise<PaidAdsAgentResult> {
   const trimmedInstruction = userInstruction.trim();
 
   if (trimmedInstruction === '') {
@@ -154,7 +179,7 @@ export function runPaidAdsAgent(userInstruction: string, repoRoot = process.cwd(
       throw new Error('Meta Ad Library URL routing failed after intent detection.');
     }
 
-    skillResult = captureAdLibrarySource({
+    skillResult = await captureAdLibrarySource({
       sourceUrl,
       userNote: trimmedInstruction,
       context: {
@@ -193,6 +218,7 @@ export function runPaidAdsAgent(userInstruction: string, repoRoot = process.cwd(
     artifact_paths: [],
     next_action: skillResult.nextAction,
     human_review_required: true,
+    ...(skillResult.summary ? { skill_summary: skillResult.summary } : {}),
   };
 
   const agentRunJsonPath = join(runDir, 'agent-run.json');
