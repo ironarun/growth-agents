@@ -6,7 +6,7 @@ import { chromium, type Browser, type BrowserContext, type Page } from 'playwrig
 import type { AgentSkillResult, CaptureAdLibrarySourceInput } from '../types.js';
 
 type SourceType = 'specific_ad_detail_url' | 'search_results_page' | 'ad_library_unknown';
-type CaptureStatus = 'captured' | 'not_found' | 'blocked_or_not_visible' | 'browser_unavailable' | 'failed';
+type CaptureStatus = 'captured' | 'not_found' | 'blocked_or_not_visible' | 'browser_unavailable' | 'failed' | 'skipped';
 type FieldExtractionStatus = 'extracted' | 'not_found' | 'needs_review';
 type SourceExtractionStatus =
   | 'needs_browser_capture'
@@ -118,6 +118,11 @@ type CaptureOptions = {
   profileDir: string;
 };
 
+type UserConfirmationResult = {
+  used: boolean;
+  skipped: boolean;
+};
+
 type AdLibraryCaptureFile = {
   captureVersion: string;
   captureStatus: 'browser_capture_attempted';
@@ -226,26 +231,35 @@ async function launchHeadfulContext(options: CaptureOptions): Promise<BrowserCon
   }
 }
 
-async function waitForUserConfirmation(options: CaptureOptions): Promise<boolean> {
+async function waitForUserConfirmation(
+  options: CaptureOptions,
+  captureInput: CaptureAdLibrarySourceInput,
+): Promise<UserConfirmationResult> {
   if (!options.waitForUser) {
-    return false;
+    return { used: false, skipped: false };
   }
 
-  console.log(
-    'Browser opened. If Meta shows a login, consent screen, or the ad modal needs manual action, handle it in the browser. Press Enter here when the ad detail modal is visible.',
-  );
+  if (captureInput.batchIndex !== undefined && captureInput.batchTotal !== undefined) {
+    console.log(
+      `URL ${captureInput.batchIndex} of ${captureInput.batchTotal} opened. Press Enter when the ad is visible, or type s to skip.`,
+    );
+  } else {
+    console.log(
+      'Browser opened. If Meta shows a login, consent screen, or the ad modal needs manual action, handle it in the browser. Press Enter here when the ad detail modal is visible.',
+    );
+  }
 
   const readline = createInterface({ input, output });
   let timer: NodeJS.Timeout | null = null;
 
   try {
-    await Promise.race([
-      readline.question('Press Enter to capture the current browser state. '),
-      new Promise<void>((resolve) => {
-        timer = setTimeout(resolve, options.userWaitMs);
+    const answer = await Promise.race([
+      readline.question('Press Enter to capture the current browser state, or type s to skip. '),
+      new Promise<string>((resolve) => {
+        timer = setTimeout(() => resolve(''), options.userWaitMs);
       }),
     ]);
-    return true;
+    return { used: true, skipped: answer.trim().toLowerCase() === 's' };
   } finally {
     if (timer !== null) {
       clearTimeout(timer);
@@ -352,7 +366,31 @@ async function runHeadfulBrowserCapture(
     await page.setViewportSize({ width: 1440, height: 1100 });
     await page.goto(input.sourceUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await page.waitForTimeout(2500);
-    const userConfirmationUsed = await waitForUserConfirmation(options);
+    const userConfirmation = await waitForUserConfirmation(options, input);
+
+    if (userConfirmation.skipped) {
+      return {
+        attempted: true,
+        browserStatus: 'launched',
+        browserMode: 'headful',
+        userConfirmationUsed: userConfirmation.used,
+        sourceType,
+        libraryId,
+        modalCaptureStatus: 'skipped',
+        headfulCaptureStatus: 'skipped',
+        associatedAdsCaptureStatus: 'skipped',
+        headfulScreenshotPath: null,
+        headfulVisibleTextPath: null,
+        modalScreenshotPath: null,
+        modalVisibleTextPath: null,
+        associatedAdsScreenshotPath: null,
+        associatedAdsVisibleTextPath: null,
+        modalVisibleText: '',
+        associatedAdsVisibleText: '',
+        extractionNotes: ['User skipped capture for this URL during headful batch review.'],
+      };
+    }
+
     await page.waitForTimeout(1000);
 
     const headfulText = await getVisibleText(page);
@@ -395,7 +433,7 @@ async function runHeadfulBrowserCapture(
       attempted: true,
       browserStatus: 'launched',
       browserMode: 'headful',
-      userConfirmationUsed,
+      userConfirmationUsed: userConfirmation.used,
       sourceType,
       libraryId,
       modalCaptureStatus,
@@ -411,7 +449,7 @@ async function runHeadfulBrowserCapture(
       associatedAdsVisibleText: headfulText,
       extractionNotes: [
         `Headful capture mode used with profile dir: ${options.profileDir}.`,
-        userConfirmationUsed
+        userConfirmation.used
           ? 'User confirmation wait completed before capture.'
           : 'User confirmation wait was not enabled.',
         modalCaptureStatus === 'captured'
@@ -982,8 +1020,11 @@ export async function captureAdLibrarySource(input: CaptureAdLibrarySourceInput)
   const durableDir = join(input.context.repoRoot, 'data', 'paid-ads', 'ad-library-captures');
   mkdirSync(durableDir, { recursive: true });
 
-  const outputJsonPath = join(input.context.runDir, 'paid-ads-source-capture.json');
-  const outputMarkdownPath = join(input.context.runDir, 'paid-ads-source-capture.md');
+  const outputBasename = input.artifactPrefix
+    ? `${input.artifactPrefix}-paid-ads-source-capture`
+    : 'paid-ads-source-capture';
+  const outputJsonPath = join(input.context.runDir, `${outputBasename}.json`);
+  const outputMarkdownPath = join(input.context.runDir, `${outputBasename}.md`);
   const durableCapturePath = join(durableDir, `${slug}.json`);
 
   writeFileSync(outputJsonPath, `${JSON.stringify(captureRecord, null, 2)}\n`, 'utf8');
@@ -1004,7 +1045,7 @@ export async function captureAdLibrarySource(input: CaptureAdLibrarySourceInput)
 
   return {
     skillName: 'capture-ad-library-source',
-    skillStatus: capture.modalCaptureStatus === 'captured' || capture.associatedAdsCaptureStatus === 'captured' ? 'partial' : 'partial',
+    skillStatus: capture.modalCaptureStatus === 'skipped' || capture.headfulCaptureStatus === 'skipped' ? 'skipped' : 'partial',
     artifactPaths: [
       outputJsonPath,
       outputMarkdownPath,
@@ -1027,6 +1068,7 @@ export async function captureAdLibrarySource(input: CaptureAdLibrarySourceInput)
       missing_fields_count: counts.missing,
       screenshot_paths: screenshotPaths,
       visible_text_paths: visibleTextPaths,
+      durable_capture_path: durableCapturePath,
     },
   };
 }

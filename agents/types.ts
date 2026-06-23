@@ -1,6 +1,7 @@
 export type AgentName = 'Paid Ads Agent';
 
 export type ParsedIntent =
+  | 'batch_ad_library_research'
   | 'capture_ad_library_source'
   | 'unsupported_source'
   | 'needs_url';
@@ -8,6 +9,8 @@ export type ParsedIntent =
 export type SkillStatus =
   | 'captured'
   | 'partial'
+  | 'failed'
+  | 'skipped'
   | 'unsupported'
   | 'not_run';
 
@@ -24,6 +27,7 @@ export type AgentSkillSummary = {
   missing_fields_count?: number;
   screenshot_paths?: string[];
   visible_text_paths?: string[];
+  durable_capture_path?: string;
 };
 
 export type AgentRun = {
@@ -60,4 +64,7 @@ export type CaptureAdLibrarySourceInput = {
   sourceUrl: string;
   userNote: string;
   context: AgentRuntimeContext;
+  artifactPrefix?: string;
+  batchIndex?: number;
+  batchTotal?: number;
 };

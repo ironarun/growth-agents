@@ -1,0 +1,17 @@
+Research these Meta Ad Library URLs as creative source material for Verbatim paid ads.
+
+Goal:
+Look across the full set, not one ad at a time.
+
+Use these ads to capture creative and copy patterns that might be adaptable for Verbatim's consultant-focused Meta test.
+
+URLs:
+
+1. https://www.facebook.com/ads/library/?id=1124521324084451
+2. https://www.facebook.com/ads/library/?id=3572852676223817
+3. https://www.facebook.com/ads/library/?id=918752017621568
+
+Constraints:
+- Do not infer profitability from ad longevity.
+- Do not fabricate missing fields.
+- Preserve human review before pattern analysis.
