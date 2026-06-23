@@ -4,5 +4,8 @@ dist/
 .DS_Store
 output/
 
+# Local browser profiles for user-assisted capture
+data/browser-profiles/
+
 # Local manual Conversation Scout seed files
 agents/conversation-scout/examples/*.local.json

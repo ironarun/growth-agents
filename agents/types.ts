@@ -14,8 +14,14 @@ export type SkillStatus =
 export type AgentSkillSummary = {
   source_type?: string;
   library_id?: string | null;
+  browser_mode?: string;
+  user_confirmation_used?: boolean;
   modal_capture_status?: string;
   extraction_status?: string;
+  screenshot_saved?: boolean;
+  visible_text_saved?: boolean;
+  extracted_fields_count?: number;
+  missing_fields_count?: number;
   screenshot_paths?: string[];
   visible_text_paths?: string[];
 };

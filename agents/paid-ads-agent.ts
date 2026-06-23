@@ -60,8 +60,14 @@ ${run.user_instruction}
 - Skill status: ${run.skill_status}
 - Source type: ${run.skill_summary?.source_type ?? 'unknown'}
 - Library ID: ${run.skill_summary?.library_id ?? 'not found'}
+- Browser mode: ${run.skill_summary?.browser_mode ?? 'unknown'}
+- User confirmation used: ${run.skill_summary?.user_confirmation_used ?? false}
 - Modal capture status: ${run.skill_summary?.modal_capture_status ?? 'not attempted'}
 - Extraction status: ${run.skill_summary?.extraction_status ?? 'unknown'}
+- Screenshot saved: ${run.skill_summary?.screenshot_saved ?? false}
+- Visible text saved: ${run.skill_summary?.visible_text_saved ?? false}
+- Extracted fields count: ${run.skill_summary?.extracted_fields_count ?? 0}
+- Missing fields count: ${run.skill_summary?.missing_fields_count ?? 0}
 
 ## Screenshot Paths
 
@@ -138,10 +144,16 @@ Intent: ${run.parsed_intent}
 Source URL: ${sourceUrl}
 Source type: ${run.skill_summary?.source_type ?? 'unknown'}
 Library ID: ${run.skill_summary?.library_id ?? 'not found'}
+Browser mode: ${run.skill_summary?.browser_mode ?? 'unknown'}
+User confirmation used: ${run.skill_summary?.user_confirmation_used ?? false}
 Selected skill: ${run.selected_skill ?? 'none'}
 Capture status: ${run.skill_status}
 Modal capture status: ${run.skill_summary?.modal_capture_status ?? 'not attempted'}
 Extraction status: ${run.skill_summary?.extraction_status ?? 'unknown'}
+Screenshot saved: ${run.skill_summary?.screenshot_saved ?? false}
+Visible text saved: ${run.skill_summary?.visible_text_saved ?? false}
+Extracted fields count: ${run.skill_summary?.extracted_fields_count ?? 0}
+Missing fields count: ${run.skill_summary?.missing_fields_count ?? 0}
 Screenshot paths:
 ${screenshotPaths.length > 0 ? screenshotPaths.map((path) => `  - ${path}`).join('\n') : '  - none'}
 Visible text paths:
