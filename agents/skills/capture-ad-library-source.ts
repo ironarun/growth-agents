@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
@@ -6,7 +6,14 @@ import { chromium, type Browser, type BrowserContext, type Page } from 'playwrig
 import type { AgentSkillResult, CaptureAdLibrarySourceInput } from '../types.js';
 
 type SourceType = 'specific_ad_detail_url' | 'search_results_page' | 'ad_library_unknown';
-type CaptureStatus = 'captured' | 'not_found' | 'blocked_or_not_visible' | 'browser_unavailable' | 'failed' | 'skipped';
+type CaptureStatus =
+  | 'captured'
+  | 'viewport_contains_target_id'
+  | 'not_found'
+  | 'blocked_or_not_visible'
+  | 'browser_unavailable'
+  | 'failed'
+  | 'skipped';
 type FieldExtractionStatus = 'extracted' | 'not_found' | 'needs_review';
 type SourceExtractionStatus =
   | 'needs_browser_capture'
@@ -121,6 +128,18 @@ type CaptureOptions = {
 type UserConfirmationResult = {
   used: boolean;
   skipped: boolean;
+};
+
+type DetailEvidence = {
+  text: string;
+  status: CaptureStatus;
+};
+
+type ScreenshotClip = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
 
 type AdLibraryCaptureFile = {
@@ -273,33 +292,253 @@ async function getVisibleText(page: Page): Promise<string> {
   return compactText(text);
 }
 
-async function getModalVisibleText(page: Page): Promise<{ text: string; found: boolean }> {
+function containsTargetLibraryId(text: string, libraryId: string | null): boolean {
+  return libraryId !== null && text.includes(`Library ID: ${libraryId}`);
+}
+
+async function getDetailEvidence(page: Page, libraryId: string | null): Promise<DetailEvidence> {
   const dialog = page.locator('[role="dialog"]').first();
   const dialogVisible = await dialog.isVisible({ timeout: 10000 }).catch(() => false);
 
   if (dialogVisible) {
     const text = await dialog.innerText({ timeout: 5000 }).catch(() => '');
     const cleanedText = compactText(text);
-    return { text: cleanedText, found: looksLikeAdDetailText(cleanedText) && !looksLikePlatformChromeOnly(cleanedText) };
+
+    if (
+      cleanedText &&
+      (looksLikeAdDetailText(cleanedText) || containsTargetLibraryId(cleanedText, libraryId)) &&
+      !looksLikePlatformChromeOnly(cleanedText)
+    ) {
+      return { text: cleanedText, status: 'captured' };
+    }
+  }
+
+  if (libraryId !== null) {
+    const targetText = await page
+      .locator(`text=Library ID: ${libraryId}`)
+      .first()
+      .evaluate((element, targetLibraryId) => {
+        let current: Element | null = element;
+        let best = element.textContent ?? '';
+
+        for (let depth = 0; current?.parentElement && depth < 8; depth += 1) {
+          const parent: Element = current.parentElement;
+          const rect = parent.getBoundingClientRect();
+          const text = parent.textContent ?? '';
+          const viewportArea = window.innerWidth * window.innerHeight;
+          const area = rect.width * rect.height;
+
+          if (
+            text.includes(`Library ID: ${targetLibraryId}`) &&
+            rect.width >= 280 &&
+            rect.height >= 180 &&
+            area <= viewportArea * 0.92
+          ) {
+            best = text;
+            current = parent;
+          } else {
+            break;
+          }
+        }
+
+        return best;
+      }, libraryId)
+      .catch(() => '');
+    const cleanedTargetText = compactText(targetText);
+
+    if (cleanedTargetText && !looksLikePlatformChromeOnly(cleanedTargetText)) {
+      return { text: cleanedTargetText, status: 'captured' };
+    }
   }
 
   const pageText = await getVisibleText(page);
-  const mayContainSpecificAd = looksLikeAdDetailText(pageText) && !looksLikePlatformChromeOnly(pageText);
-  return { text: mayContainSpecificAd ? pageText : '', found: mayContainSpecificAd };
+
+  if (/log in|captcha|security check|temporarily blocked/i.test(pageText)) {
+    return { text: pageText, status: 'blocked_or_not_visible' };
+  }
+
+  if (containsTargetLibraryId(pageText, libraryId)) {
+    return { text: pageText, status: 'viewport_contains_target_id' };
+  }
+
+  return { text: '', status: 'not_found' };
 }
 
-async function screenshotModal(page: Page, screenshotPath: string): Promise<boolean> {
+async function findDetailClip(page: Page, libraryId: string | null): Promise<ScreenshotClip | null> {
+  return page
+    .evaluate((targetLibraryId) => {
+      function clippedRect(element: Element): ScreenshotClip | null {
+        const rect = element.getBoundingClientRect();
+        const x = Math.max(0, rect.left);
+        const y = Math.max(0, rect.top);
+        const width = Math.min(window.innerWidth - x, rect.width);
+        const height = Math.min(window.innerHeight - y, rect.height);
+
+        if (width < 360 || height < 160 || height > window.innerHeight * 0.94) {
+          return null;
+        }
+
+        return { x, y, width, height };
+      }
+
+      if (targetLibraryId) {
+        let bestTarget: { clip: ScreenshotClip; score: number } | null = null;
+
+        for (const element of Array.from(document.querySelectorAll('div, section, article'))) {
+          const text = element.textContent ?? '';
+
+          if (!text.includes(`Library ID: ${targetLibraryId}`)) {
+            continue;
+          }
+
+          let current: Element | null = element;
+
+          for (let depth = 0; current && depth < 12; depth += 1) {
+            const clip = clippedRect(current);
+
+            if (clip !== null) {
+              let score = 0;
+              if (clip.width >= 450 && clip.width <= 900) score += 30;
+              if (clip.height >= 350 && clip.height <= 950) score += 30;
+              if (clip.y <= window.innerHeight * 0.25) score += 15;
+              if (clip.x >= window.innerWidth * 0.2 && clip.x <= window.innerWidth * 0.7) score += 15;
+              score += depth;
+
+              if (!bestTarget || score > bestTarget.score) {
+                bestTarget = { clip, score };
+              }
+            }
+
+            current = current.parentElement;
+          }
+        }
+
+        if (bestTarget !== null) {
+          return bestTarget.clip;
+        }
+      }
+
+      function isVisible(element: Element): boolean {
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return (
+          style.visibility !== 'hidden' &&
+          style.display !== 'none' &&
+          rect.width >= 360 &&
+          rect.height >= 160 &&
+          rect.height <= window.innerHeight * 0.94 &&
+          rect.bottom > 0 &&
+          rect.right > 0 &&
+          rect.top < window.innerHeight &&
+          rect.left < window.innerWidth
+        );
+      }
+
+      function scoreElement(element: Element): number {
+        const text = element.textContent ?? '';
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        let score = 0;
+
+        if (targetLibraryId && text.includes(`Library ID: ${targetLibraryId}`)) score += 80;
+        if (/Library ID|Started running|Sponsored|Active/i.test(text)) score += 30;
+        if (element.getAttribute('role') === 'dialog') score += 30;
+        if (style.position === 'fixed' || style.position === 'sticky') score += 20;
+        if (style.backgroundColor.includes('255, 255, 255')) score += 10;
+        if (rect.top <= window.innerHeight * 0.25 && rect.left <= window.innerWidth * 0.5) score += 10;
+        if (rect.width > window.innerWidth * 0.98 || rect.height > window.innerHeight * 0.98) score -= 60;
+        if (rect.width >= 450 && rect.width <= 900) score += 20;
+        if (rect.height >= 300 && rect.height <= 950) score += 20;
+
+        return score;
+      }
+
+      let best: { element: Element; score: number } | null = null;
+
+      for (const element of Array.from(document.querySelectorAll('div, section, article, [role="dialog"]'))) {
+        if (!isVisible(element)) continue;
+
+        const text = element.textContent ?? '';
+
+        if (
+          targetLibraryId &&
+          !text.includes(`Library ID: ${targetLibraryId}`) &&
+          !/Library ID|Started running|Sponsored|Active/i.test(text)
+        ) {
+          continue;
+        }
+
+        const score = scoreElement(element);
+
+        if (score > 0 && (!best || score > best.score)) {
+          best = { element, score };
+        }
+      }
+
+      if (!best || best.score < 50) {
+        return null;
+      }
+
+      return clippedRect(best.element);
+    }, libraryId)
+    .catch(() => null);
+}
+
+async function screenshotModal(page: Page, screenshotPath: string, libraryId: string | null): Promise<boolean> {
+  if (existsSync(screenshotPath)) {
+    unlinkSync(screenshotPath);
+  }
+
+  const modalTitleBox = await page.locator('text=Link to ad').first().boundingBox().catch(() => null);
+  const viewport = page.viewportSize();
+
+  if (modalTitleBox !== null && viewport !== null) {
+    const x = Math.max(0, modalTitleBox.x - 24);
+    const y = Math.max(0, modalTitleBox.y - 24);
+    const width = Math.min(650, viewport.width - x);
+    const height = Math.min(860, viewport.height - y - 24);
+
+    if (width >= 360 && height >= 300) {
+      await page.screenshot({ path: screenshotPath, clip: { x, y, width, height } }).catch(() => undefined);
+      return existsSync(screenshotPath);
+    }
+  }
+
+  const clip = await findDetailClip(page, libraryId);
+
+  if (clip !== null && clip.width > 0 && clip.height > 0) {
+    await page.screenshot({ path: screenshotPath, clip }).catch(() => undefined);
+    return existsSync(screenshotPath);
+  }
+
+  if (libraryId !== null) {
+    const targetBox = await page.locator(`text=Library ID: ${libraryId}`).first().boundingBox().catch(() => null);
+
+    if (targetBox !== null && viewport !== null) {
+      const x = Math.max(0, targetBox.x - 90);
+      const y = Math.max(0, targetBox.y - 140);
+      const width = Math.min(720, viewport.width - x);
+      const height = Math.min(900, viewport.height - y - 24);
+
+      if (width >= 360 && height >= 300) {
+        await page.screenshot({ path: screenshotPath, clip: { x, y, width, height } }).catch(() => undefined);
+        return existsSync(screenshotPath);
+      }
+    }
+  }
+
   const dialog = page.locator('[role="dialog"]').first();
   const dialogVisible = await dialog.isVisible({ timeout: 1000 }).catch(() => false);
 
   if (dialogVisible) {
-    await dialog.screenshot({ path: screenshotPath }).catch(async () => {
-      await page.screenshot({ path: screenshotPath, fullPage: false });
-    });
-    return true;
+    const box = await dialog.boundingBox().catch(() => null);
+
+    if (box !== null && box.width >= 360 && box.height <= 1100 * 0.94) {
+      await dialog.screenshot({ path: screenshotPath }).catch(() => undefined);
+      return existsSync(screenshotPath);
+    }
   }
 
-  await page.screenshot({ path: screenshotPath, fullPage: false });
   return existsSync(screenshotPath);
 }
 
@@ -330,8 +569,14 @@ async function runHeadfulBrowserCapture(
   mkdirSync(screenshotDir, { recursive: true });
   mkdirSync(visibleTextDir, { recursive: true });
 
-  const headfulScreenshotPath = join(screenshotDir, `${slug}-headful.png`);
-  const headfulVisibleTextPath = join(visibleTextDir, `${slug}-headful.txt`);
+  const headfulScreenshotPath = join(
+    screenshotDir,
+    sourceType === 'specific_ad_detail_url' ? `${slug}-viewport.png` : `${slug}-headful.png`,
+  );
+  const headfulVisibleTextPath = join(
+    visibleTextDir,
+    sourceType === 'specific_ad_detail_url' ? `${slug}-viewport.txt` : `${slug}-headful.txt`,
+  );
   const modalScreenshotPath = sourceType === 'specific_ad_detail_url' ? join(screenshotDir, `${slug}-modal.png`) : null;
   const modalVisibleTextPath = sourceType === 'specific_ad_detail_url' ? join(visibleTextDir, `${slug}-modal.txt`) : null;
   let context: BrowserContext | null = null;
@@ -404,9 +649,11 @@ async function runHeadfulBrowserCapture(
       writeFileSync(headfulVisibleTextPath, `${headfulText}\n`, 'utf8');
     }
 
-    await page.screenshot({ path: headfulScreenshotPath, fullPage: true }).catch(async () => {
-      await page.screenshot({ path: headfulScreenshotPath, fullPage: false }).catch(() => undefined);
-    });
+    await page
+      .screenshot({ path: headfulScreenshotPath, fullPage: sourceType !== 'specific_ad_detail_url' })
+      .catch(async () => {
+        await page.screenshot({ path: headfulScreenshotPath, fullPage: false }).catch(() => undefined);
+      });
 
     let modalVisibleText = '';
     let modalCaptureStatus: CaptureStatus = 'not_found';
@@ -414,17 +661,20 @@ async function runHeadfulBrowserCapture(
     let savedModalVisibleTextPath: string | null = null;
 
     if (sourceType === 'specific_ad_detail_url') {
-      const modal = await getModalVisibleText(page);
-      modalVisibleText = modal.text;
-      modalCaptureStatus = modal.found ? 'captured' : headfulCaptureStatus === 'captured' ? 'not_found' : headfulCaptureStatus;
+      const detailEvidence = await getDetailEvidence(page, libraryId);
+      modalVisibleText = detailEvidence.text;
+      modalCaptureStatus =
+        detailEvidence.status === 'not_found' && headfulCaptureStatus !== 'captured'
+          ? headfulCaptureStatus
+          : detailEvidence.status;
 
-      if (modal.found && modalVisibleTextPath) {
+      if (modalCaptureStatus === 'captured' && modalVisibleTextPath) {
         writeFileSync(modalVisibleTextPath, `${modalVisibleText}\n`, 'utf8');
         savedModalVisibleTextPath = modalVisibleTextPath;
       }
 
-      if (modal.found && modalScreenshotPath) {
-        await screenshotModal(page, modalScreenshotPath);
+      if (modalCaptureStatus === 'captured' && modalScreenshotPath) {
+        await screenshotModal(page, modalScreenshotPath, libraryId);
         savedModalScreenshotPath = existsSync(modalScreenshotPath) ? modalScreenshotPath : null;
       }
     }
@@ -453,8 +703,10 @@ async function runHeadfulBrowserCapture(
           ? 'User confirmation wait completed before capture.'
           : 'User confirmation wait was not enabled.',
         modalCaptureStatus === 'captured'
-          ? 'Dialog-like ad detail content was captured.'
-          : 'No dialog-like ad detail content was detected after user confirmation.',
+          ? 'Ad detail modal or target container content was captured.'
+          : modalCaptureStatus === 'viewport_contains_target_id'
+            ? 'No modal container was detected, but the viewport contained the target Library ID.'
+            : 'No ad detail modal or target container was detected after user confirmation.',
       ],
     };
   } catch (error) {
@@ -499,13 +751,15 @@ async function runBrowserCapture(input: CaptureAdLibrarySourceInput, slug: strin
 
   const modalScreenshotPath = sourceType === 'specific_ad_detail_url' ? join(screenshotDir, `${slug}-modal.png`) : null;
   const modalVisibleTextPath = sourceType === 'specific_ad_detail_url' ? join(visibleTextDir, `${slug}-modal.txt`) : null;
+  const viewportScreenshotPath = sourceType === 'specific_ad_detail_url' ? join(screenshotDir, `${slug}-viewport.png`) : null;
+  const viewportVisibleTextPath = sourceType === 'specific_ad_detail_url' ? join(visibleTextDir, `${slug}-viewport.txt`) : null;
   const associatedAdsScreenshotPath =
     sourceType === 'specific_ad_detail_url'
-      ? join(screenshotDir, `${slug}-associated-ads.png`)
+      ? null
       : join(screenshotDir, `${slug}-search-results.png`);
   const associatedAdsVisibleTextPath =
     sourceType === 'specific_ad_detail_url'
-      ? join(visibleTextDir, `${slug}-associated-ads.txt`)
+      ? null
       : join(visibleTextDir, `${slug}-search-results.txt`);
 
   let browser: Browser | null = null;
@@ -545,52 +799,60 @@ async function runBrowserCapture(input: CaptureAdLibrarySourceInput, slug: strin
     let savedModalScreenshotPath: string | null = null;
     let savedModalVisibleTextPath: string | null = null;
     const extractionNotes: string[] = [];
+    let viewportText = '';
+    let savedViewportScreenshotPath: string | null = null;
+    let savedViewportVisibleTextPath: string | null = null;
 
     if (sourceType === 'specific_ad_detail_url') {
-      const modal = await getModalVisibleText(page);
-      modalVisibleText = modal.text;
-      modalCaptureStatus = modal.found ? 'captured' : 'not_found';
+      viewportText = await getVisibleText(page);
 
-      if (modal.found && modalVisibleTextPath) {
+      if (viewportText && viewportVisibleTextPath) {
+        writeFileSync(viewportVisibleTextPath, `${viewportText}\n`, 'utf8');
+        savedViewportVisibleTextPath = viewportVisibleTextPath;
+      }
+
+      if (viewportScreenshotPath) {
+        await page.screenshot({ path: viewportScreenshotPath, fullPage: false }).catch(() => undefined);
+        savedViewportScreenshotPath = existsSync(viewportScreenshotPath) ? viewportScreenshotPath : null;
+      }
+
+      const detailEvidence = await getDetailEvidence(page, libraryId);
+      modalVisibleText = detailEvidence.text;
+      modalCaptureStatus = detailEvidence.status;
+
+      if (modalCaptureStatus === 'captured' && modalVisibleTextPath) {
         writeFileSync(modalVisibleTextPath, `${modalVisibleText}\n`, 'utf8');
         savedModalVisibleTextPath = modalVisibleTextPath;
       }
 
-      if (modal.found && modalScreenshotPath) {
-        await screenshotModal(page, modalScreenshotPath);
+      if (modalCaptureStatus === 'captured' && modalScreenshotPath) {
+        await screenshotModal(page, modalScreenshotPath, libraryId);
         savedModalScreenshotPath = existsSync(modalScreenshotPath) ? modalScreenshotPath : null;
       }
 
-      if (!modal.found) {
-        const pageText = await getVisibleText(page);
-        if (/log in|captcha|security check|temporarily blocked/i.test(pageText)) {
-          modalCaptureStatus = 'blocked_or_not_visible';
-          extractionNotes.push('Meta page appears blocked, login-gated, or did not expose an ad detail modal.');
-        } else {
-          extractionNotes.push('Specific ad detail modal was not detected.');
-        }
-      }
-
-      const closedModal = await closeModalIfPossible(page);
       extractionNotes.push(
-        closedModal
-          ? 'Modal was closed after modal capture to collect associated ads page context.'
-          : 'Modal close button was not detected or modal was not open.',
+        modalCaptureStatus === 'captured'
+          ? 'Ad detail modal or target container content was captured.'
+          : modalCaptureStatus === 'viewport_contains_target_id'
+            ? 'No modal container was detected, but the viewport contained the target Library ID.'
+            : 'Specific ad detail modal was not detected.',
       );
     }
 
-    const associatedText = await getVisibleText(page);
+    const associatedText = sourceType === 'specific_ad_detail_url' ? '' : await getVisibleText(page);
     let associatedAdsCaptureStatus: CaptureStatus = associatedText ? 'captured' : 'not_found';
 
     if (/log in|captcha|security check|temporarily blocked/i.test(associatedText)) {
       associatedAdsCaptureStatus = 'blocked_or_not_visible';
     }
 
-    if (associatedText) {
+    if (associatedText && associatedAdsVisibleTextPath) {
       writeFileSync(associatedAdsVisibleTextPath, `${associatedText}\n`, 'utf8');
     }
 
-    await page.screenshot({ path: associatedAdsScreenshotPath, fullPage: false }).catch(() => undefined);
+    if (associatedAdsScreenshotPath) {
+      await page.screenshot({ path: associatedAdsScreenshotPath, fullPage: false }).catch(() => undefined);
+    }
 
     return {
       attempted: true,
@@ -602,14 +864,15 @@ async function runBrowserCapture(input: CaptureAdLibrarySourceInput, slug: strin
       modalCaptureStatus,
       headfulCaptureStatus: 'not_found',
       associatedAdsCaptureStatus,
-      headfulScreenshotPath: null,
-      headfulVisibleTextPath: null,
+      headfulScreenshotPath: savedViewportScreenshotPath,
+      headfulVisibleTextPath: savedViewportVisibleTextPath,
       modalScreenshotPath: savedModalScreenshotPath,
       modalVisibleTextPath: savedModalVisibleTextPath,
-      associatedAdsScreenshotPath: existsSync(associatedAdsScreenshotPath) ? associatedAdsScreenshotPath : null,
-      associatedAdsVisibleTextPath: associatedText ? associatedAdsVisibleTextPath : null,
+      associatedAdsScreenshotPath:
+        associatedAdsScreenshotPath && existsSync(associatedAdsScreenshotPath) ? associatedAdsScreenshotPath : null,
+      associatedAdsVisibleTextPath: associatedText && associatedAdsVisibleTextPath ? associatedAdsVisibleTextPath : null,
       modalVisibleText,
-      associatedAdsVisibleText: associatedText,
+      associatedAdsVisibleText: sourceType === 'specific_ad_detail_url' ? viewportText : associatedText,
       extractionNotes,
     };
   } catch (error) {
@@ -775,7 +1038,8 @@ function extractVisibleCopy(text: string): ExtractedFields['visibleCopy'] {
 
 function extractFields(capture: BrowserCaptureResult): ExtractedFields {
   const sourceText =
-    capture.sourceType === 'specific_ad_detail_url' && capture.modalCaptureStatus === 'captured'
+    capture.sourceType === 'specific_ad_detail_url' &&
+    (capture.modalCaptureStatus === 'captured' || capture.modalCaptureStatus === 'viewport_contains_target_id')
       ? capture.modalVisibleText
       : capture.sourceType === 'specific_ad_detail_url' &&
           capture.browserMode === 'headful' &&
@@ -972,15 +1236,15 @@ ${example.userNote}
 
 ## Screenshot Paths
 
-- Headful page screenshot: ${example.headfulScreenshotPath ?? 'not captured'}
+- Viewport screenshot: ${example.headfulScreenshotPath ?? 'not captured'}
 - Modal screenshot: ${example.modalScreenshotPath ?? 'not captured'}
-- Associated ads screenshot: ${example.associatedAdsScreenshotPath ?? 'not captured'}
+- Associated ads or search-results screenshot: ${example.associatedAdsScreenshotPath ?? 'not captured'}
 
 ## Visible Text Paths
 
-- Headful page visible text: ${example.headfulVisibleTextPath ?? 'not captured'}
+- Viewport visible text: ${example.headfulVisibleTextPath ?? 'not captured'}
 - Modal visible text: ${example.modalVisibleTextPath ?? 'not captured'}
-- Associated ads visible text: ${example.associatedAdsVisibleTextPath ?? 'not captured'}
+- Associated ads or search-results visible text: ${example.associatedAdsVisibleTextPath ?? 'not captured'}
 
 ## Extracted Fields
 
