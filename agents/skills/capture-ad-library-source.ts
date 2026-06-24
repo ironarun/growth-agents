@@ -907,7 +907,7 @@ function lines(text: string): string[] {
 
 function extractBlockForLibraryId(text: string, libraryId: string): string {
   const textLines = lines(text);
-  const idIndex = textLines.findIndex((line) => line.includes(`Library ID: ${libraryId}`));
+  const idIndex = textLines.map((line) => line.includes(`Library ID: ${libraryId}`)).lastIndexOf(true);
 
   if (idIndex < 0) {
     return '';
@@ -920,6 +920,35 @@ function extractBlockForLibraryId(text: string, libraryId: string): string {
   const endIndex = nextIdRelativeIndex >= 0 ? idIndex + 1 + nextIdRelativeIndex : Math.min(textLines.length, idIndex + 40);
 
   return textLines.slice(startIndex, endIndex).join('\n');
+}
+
+function selectExtractionText(capture: BrowserCaptureResult): string {
+  if (capture.sourceType === 'specific_ad_detail_url') {
+    const modalHasUsableDetail =
+      (capture.modalCaptureStatus === 'captured' || capture.modalCaptureStatus === 'viewport_contains_target_id') &&
+      looksLikeAdDetailText(capture.modalVisibleText) &&
+      !looksLikePlatformChromeOnly(capture.modalVisibleText);
+
+    if (modalHasUsableDetail && capture.modalVisibleText.split('\n').filter(Boolean).length > 3) {
+      return capture.modalVisibleText;
+    }
+
+    if (capture.libraryId !== null && capture.associatedAdsVisibleText.includes(capture.libraryId)) {
+      return extractBlockForLibraryId(capture.associatedAdsVisibleText, capture.libraryId);
+    }
+
+    return capture.associatedAdsVisibleText;
+  }
+
+  if (capture.browserMode === 'headful' && capture.headfulCaptureStatus === 'captured') {
+    return capture.associatedAdsVisibleText;
+  }
+
+  if (capture.sourceType === 'search_results_page' && capture.associatedAdsCaptureStatus === 'captured') {
+    return capture.associatedAdsVisibleText;
+  }
+
+  return '';
 }
 
 function field<T>(value: T, extracted: boolean): FieldValue<T> {
@@ -1021,11 +1050,16 @@ function extractVisibleCopy(text: string): ExtractedFields['visibleCopy'] {
     const urlIndex = afterSponsored.findIndex((line) => /^https?:\/\//i.test(line) || /^[A-Z0-9.-]+\.[A-Z]{2,}/.test(line));
     const copyLines = afterSponsored.slice(0, urlIndex >= 0 ? urlIndex : 1).filter((line) => !/^0:00/.test(line));
     const headline = urlIndex >= 0 ? afterSponsored[urlIndex + 1] ?? '' : '';
+    const knownCtas = /^(Learn more|Learn More|Sign Up|Sign up|Download|Install now|Subscribe|Shop now|Get offer|Apply now)$/i;
+    const description =
+      urlIndex >= 0 && afterSponsored[urlIndex + 2] && !knownCtas.test(afterSponsored[urlIndex + 2] ?? '')
+        ? afterSponsored[urlIndex + 2] ?? ''
+        : '';
 
     return {
       primaryText: field(copyLines.join(' '), copyLines.length > 0),
       headline: field(headline, headline !== ''),
-      description: field('', false),
+      description: field(description, description !== ''),
     };
   }
 
@@ -1037,23 +1071,7 @@ function extractVisibleCopy(text: string): ExtractedFields['visibleCopy'] {
 }
 
 function extractFields(capture: BrowserCaptureResult): ExtractedFields {
-  const sourceText =
-    capture.sourceType === 'specific_ad_detail_url' &&
-    (capture.modalCaptureStatus === 'captured' || capture.modalCaptureStatus === 'viewport_contains_target_id')
-      ? capture.modalVisibleText
-      : capture.sourceType === 'specific_ad_detail_url' &&
-          capture.browserMode === 'headful' &&
-          capture.headfulCaptureStatus === 'captured' &&
-          capture.libraryId !== null &&
-          capture.associatedAdsVisibleText.includes(capture.libraryId)
-        ? extractBlockForLibraryId(capture.associatedAdsVisibleText, capture.libraryId)
-        : capture.sourceType !== 'specific_ad_detail_url' &&
-            capture.browserMode === 'headful' &&
-            capture.headfulCaptureStatus === 'captured'
-        ? capture.associatedAdsVisibleText
-        : capture.sourceType === 'search_results_page' && capture.associatedAdsCaptureStatus === 'captured'
-          ? capture.associatedAdsVisibleText
-          : '';
+  const sourceText = selectExtractionText(capture);
 
   return {
     advertiser: extractAdvertiser(sourceText),
