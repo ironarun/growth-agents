@@ -36,6 +36,7 @@
     "consultant:paid-ads-funnel-readiness": "tsx scripts/generate-paid-ads-funnel-readiness-checklist.ts",
     "consultant:paid-ads-creative-render-manifest": "tsx scripts/generate-paid-ads-creative-render-manifest.ts",
     "consultant:paid-ads-image-render-briefs": "tsx scripts/generate-paid-ads-image-render-briefs.ts",
+    "consultant:paid-ads-review-generated-asset": "tsx scripts/review-paid-ads-generated-asset.ts",
     "consultant:paid-ads-render-static": "tsx scripts/render-paid-ads-static-image.ts",
     "consultant:paid-ads-render-template": "tsx scripts/render-paid-ads-template.ts",
     "consultant:paid-ads-analyze-creative-patterns": "tsx scripts/analyze-paid-ads-creative-patterns.ts",
