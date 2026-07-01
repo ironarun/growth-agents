@@ -34,8 +34,8 @@ data/paid-ads/selected-assets/first-flight-selected-assets-2026-06-30.json
 |---|---|---|---|---|---|---|---|---|---|---|
 | `concept-01-confident-draft` | Confident Draft | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_selected-candidate-04_finalized-logo_1x1_v01.png` | approved | approved | official_logo_overlaid | false | false | null | Selected candidate 04. Official logo overlaid. Keep upload gated until final asset package review. |
 | `concept-02-before-the-client` | Before The Client | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_02_before-the-client_editorial-collage_selected-candidate-03_finalized-logo_1x1_v01.png` | approved | approved | corrected_in_image_edit | false | false | null | Selected candidate 03. Logo corrected through image editing. Keep upload gated until final asset package review. |
-| `concept-04-sounds-ready` | Polished Is Not Pressure Tested | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_logo-area-reserved_1x1_v01.png` | approved | approved | pending | false | false | null | Selected candidate 02. Logo area is reserved; final official logo treatment still pending. Keep upload gated. |
-| `concept-07-missing-disagreement` | Missing Disagreement | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_logo-area-reserved_1x1_v01.png` | approved | approved | pending | false | false | null | Selected candidate 01. Logo area is reserved; final official logo treatment still pending. Keep upload gated. |
+| `concept-04-sounds-ready` | Polished Is Not Pressure Tested | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_official-logo_1x1_v03.png` | approved | approved | official_logo_overlaid | false | false | null | Selected candidate 02. Official logo overlaid using approved first-flight logo standard. Keep upload gated until final package review. |
+| `concept-07-missing-disagreement` | Missing Disagreement | `editorial-collage` | `assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_official-logo_1x1_v03.png` | approved | approved | official_logo_overlaid | false | false | null | Selected candidate 01. Official logo overlaid using approved first-flight logo standard. Keep upload gated until final package review. |
 
 ## Concept 04 Copy Note
 
@@ -74,10 +74,9 @@ Per-asset gates:
 
 ## Next Actions
 
-1. Resolve final logo treatment for Concept 04 and Concept 07.
-2. Perform final package review before Meta upload.
-3. Create Meta upload checklist.
-4. Record Meta ad IDs only after manual upload.
+1. Perform final package review before Meta upload.
+2. Create Meta upload checklist.
+3. Record Meta ad IDs only after manual upload.
 
 ## Do Not Do Yet
 

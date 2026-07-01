@@ -42,10 +42,10 @@
       "concept_id": "concept-04-sounds-ready",
       "name": "Polished Is Not Pressure Tested",
       "style_id": "editorial-collage",
-      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_logo-area-reserved_1x1_v01.png",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_official-logo_1x1_v03.png",
       "visual_review_status": "approved",
       "text_accuracy_status": "approved",
-      "logo_status": "pending",
+      "logo_status": "official_logo_overlaid",
       "review_manifest_path": null,
       "approved_for_upload": false,
       "uploaded_to_meta": false,
@@ -54,26 +54,25 @@
       "headline": "Your AI work reads polished.",
       "subhead": "That’s the problem.",
       "support_line": "Polished is not pressure tested.",
-      "notes": "Selected candidate 02. Logo area is reserved; final official logo treatment still pending. Keep upload gated."
+      "notes": "Selected candidate 02. Official logo overlaid using approved first-flight logo standard. Keep upload gated until final package review."
     },
     {
       "concept_id": "concept-07-missing-disagreement",
       "name": "Missing Disagreement",
       "style_id": "editorial-collage",
-      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_logo-area-reserved_1x1_v01.png",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_official-logo_1x1_v03.png",
       "visual_review_status": "approved",
       "text_accuracy_status": "approved",
-      "logo_status": "pending",
+      "logo_status": "official_logo_overlaid",
       "review_manifest_path": null,
       "approved_for_upload": false,
       "uploaded_to_meta": false,
       "meta_ad_id": null,
       "human_review_required": true,
-      "notes": "Selected candidate 01. Logo area is reserved; final official logo treatment still pending. Keep upload gated."
+      "notes": "Selected candidate 01. Official logo overlaid using approved first-flight logo standard. Keep upload gated until final package review."
     }
   ],
   "next_actions": [
-    "Resolve final logo treatment for Concept 04 and Concept 07.",
     "Perform final package review before Meta upload.",
     "Create Meta upload checklist.",
     "Record Meta ad IDs only after manual upload."
