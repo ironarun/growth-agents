@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-06-30T00:00:00-04:00",
+  "campaign": "verbatim_paid_ads_first_flight",
+  "total_selected_assets": 4,
+  "lifecycle": {
+    "approved_for_upload": false,
+    "uploaded_to_meta": false,
+    "human_review_required": true
+  },
+  "selected_assets": [
+    {
+      "concept_id": "concept-01-confident-draft",
+      "name": "Confident Draft",
+      "style_id": "editorial-collage",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_selected-candidate-04_finalized-logo_1x1_v01.png",
+      "visual_review_status": "approved",
+      "text_accuracy_status": "approved",
+      "logo_status": "official_logo_overlaid",
+      "review_manifest_path": null,
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_ad_id": null,
+      "human_review_required": true,
+      "notes": "Selected candidate 04. Official logo overlaid. Keep upload gated until final asset package review."
+    },
+    {
+      "concept_id": "concept-02-before-the-client",
+      "name": "Before The Client",
+      "style_id": "editorial-collage",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_02_before-the-client_editorial-collage_selected-candidate-03_finalized-logo_1x1_v01.png",
+      "visual_review_status": "approved",
+      "text_accuracy_status": "approved",
+      "logo_status": "corrected_in_image_edit",
+      "review_manifest_path": "output/run-2026-06-25T21-52-13-058Z/paid-ads-generated-asset-review.json",
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_ad_id": null,
+      "human_review_required": true,
+      "notes": "Selected candidate 03. Logo corrected through image editing. Keep upload gated until final asset package review."
+    },
+    {
+      "concept_id": "concept-04-sounds-ready",
+      "name": "Polished Is Not Pressure Tested",
+      "style_id": "editorial-collage",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_logo-area-reserved_1x1_v01.png",
+      "visual_review_status": "approved",
+      "text_accuracy_status": "approved",
+      "logo_status": "pending",
+      "review_manifest_path": null,
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_ad_id": null,
+      "human_review_required": true,
+      "headline": "Your AI work reads polished.",
+      "subhead": "That’s the problem.",
+      "support_line": "Polished is not pressure tested.",
+      "notes": "Selected candidate 02. Logo area is reserved; final official logo treatment still pending. Keep upload gated."
+    },
+    {
+      "concept_id": "concept-07-missing-disagreement",
+      "name": "Missing Disagreement",
+      "style_id": "editorial-collage",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_logo-area-reserved_1x1_v01.png",
+      "visual_review_status": "approved",
+      "text_accuracy_status": "approved",
+      "logo_status": "pending",
+      "review_manifest_path": null,
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_ad_id": null,
+      "human_review_required": true,
+      "notes": "Selected candidate 01. Logo area is reserved; final official logo treatment still pending. Keep upload gated."
+    }
+  ],
+  "next_actions": [
+    "Resolve final logo treatment for Concept 04 and Concept 07.",
+    "Perform final package review before Meta upload.",
+    "Create Meta upload checklist.",
+    "Record Meta ad IDs only after manual upload."
+  ]
+}
