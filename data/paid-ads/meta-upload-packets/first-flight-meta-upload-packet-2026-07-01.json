@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-07-02T00:00:00-04:00",
+  "packet_id": "first-flight-meta-upload-packet-2026-07-01",
+  "campaign": "verbatim_paid_ads_first_flight",
+  "landing_url": "https://helloverbatim.com",
+  "cta": "Try Verbatim",
+  "source_selected_assets_path": "data/paid-ads/selected-assets/first-flight-selected-assets-2026-06-30.json",
+  "manual_upload_required": true,
+  "human_review_required": true,
+  "approved_for_upload": false,
+  "uploaded_to_meta": false,
+  "meta_campaign_id": null,
+  "meta_ad_set_id": null,
+  "notes": [
+    "This packet prepares the first-flight selected assets for manual Meta upload review.",
+    "It is not an uploader and does not approve launch.",
+    "PNG files are local artifacts and are not committed to git."
+  ],
+  "ads": [
+    {
+      "concept_id": "concept-01-confident-draft",
+      "concept_name": "Confident Draft",
+      "short_label": "Confident Draft",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_selected-candidate-04_finalized-logo_1x1_v01.png",
+      "visual_style": "editorial-collage",
+      "headline": "The draft sounds finished. Has anyone challenged it?",
+      "main_on_image_copy": "The draft sounds finished. Has anyone challenged it?",
+      "supporting_copy": "challenge before action",
+      "review_card_copy": {
+        "heading": "BEFORE CLIENT USE, VERBATIM CHECKS:",
+        "lines": [
+          "weak claims",
+          "missing counterpoints",
+          "overconfident reasoning"
+        ]
+      },
+      "cta": "Try Verbatim",
+      "logo_status": "official_logo_overlaid",
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "upload_notes": "Selected candidate 04. Official logo overlaid. Confirm local PNG exists before manual upload."
+    },
+    {
+      "concept_id": "concept-02-before-the-client",
+      "concept_name": "Before The Client",
+      "short_label": "Before The Client",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_02_before-the-client_editorial-collage_selected-candidate-03_finalized-logo_1x1_v01.png",
+      "visual_style": "editorial-collage",
+      "headline": "Before the client sees it, who pushes back?",
+      "main_on_image_copy": "Before the client sees it, who pushes back?",
+      "supporting_copy": "review before delivery",
+      "review_card_copy": {
+        "heading": "BEFORE DELIVERY, VERBATIM CHECKS:",
+        "lines": [
+          "unsupported claims",
+          "weak assumptions",
+          "client-facing risk"
+        ]
+      },
+      "cta": "Try Verbatim",
+      "logo_status": "corrected_in_image_edit",
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "upload_notes": "Selected candidate 03. Logo corrected through image editing. Confirm local PNG exists before manual upload."
+    },
+    {
+      "concept_id": "concept-04-sounds-ready",
+      "concept_name": "Polished Is Not Pressure Tested",
+      "short_label": "Polished Is Not Pressure Tested",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_official-logo_1x1_v03.png",
+      "visual_style": "editorial-collage",
+      "headline": "Your AI work reads polished.",
+      "main_on_image_copy": "Your AI work reads polished. That's the problem.",
+      "supporting_copy": "Polished is not pressure tested.",
+      "review_card_copy": {
+        "heading": "BEFORE YOU ACT, VERBATIM CHECKS:",
+        "lines": [
+          "confident claims",
+          "missing caveats",
+          "thin reasoning"
+        ]
+      },
+      "cta": "Try Verbatim",
+      "logo_status": "official_logo_overlaid",
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "upload_notes": "Selected candidate 02. Official logo overlaid using approved first-flight logo standard. Confirm local PNG exists before manual upload."
+    },
+    {
+      "concept_id": "concept-07-missing-disagreement",
+      "concept_name": "Missing Disagreement",
+      "short_label": "Missing Disagreement",
+      "selected_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_07_missing-disagreement_editorial-collage_selected-candidate-01_official-logo_1x1_v03.png",
+      "visual_style": "editorial-collage",
+      "headline": "What part of your AI workflow disagrees with you?",
+      "main_on_image_copy": "What part of your AI workflow disagrees with you?",
+      "supporting_copy": "build in disagreement",
+      "review_card_copy": {
+        "heading": "VERBATIM ADDS DISAGREEMENT AROUND:",
+        "lines": [
+          "assumptions",
+          "recommendations",
+          "reasoning gaps"
+        ]
+      },
+      "cta": "Try Verbatim",
+      "logo_status": "official_logo_overlaid",
+      "approved_for_upload": false,
+      "uploaded_to_meta": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "upload_notes": "Selected candidate 01. Official logo overlaid using approved first-flight logo standard. Confirm local PNG exists before manual upload."
+    }
+  ],
+  "manual_upload_checklist": [
+    "Confirm final PNG exists locally.",
+    "Confirm logo is official and transparent.",
+    "Confirm copy has no em dashes.",
+    "Confirm landing URL.",
+    "Confirm Meta Pixel.",
+    "Confirm conversion event.",
+    "Upload manually to Meta.",
+    "Record campaign/ad set/ad IDs back into the packet later."
+  ],
+  "lifecycle_gates": {
+    "approved_for_upload": false,
+    "uploaded_to_meta": false,
+    "human_review_required": true
+  }
+}
