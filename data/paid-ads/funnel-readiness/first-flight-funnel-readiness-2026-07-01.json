@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-07-02T00:00:00-04:00",
+  "checklist_id": "first-flight-funnel-readiness-2026-07-01",
+  "campaign": "verbatim_paid_ads_first_flight",
+  "source_upload_packet_path": "data/paid-ads/meta-upload-packets/first-flight-meta-upload-packet-2026-07-01.json",
+  "landing_url": {
+    "url": "https://helloverbatim.com",
+    "status": "needs_manual_verification",
+    "evidence_to_capture": [
+      "Landing page opens correctly.",
+      "Campaign URL can be constructed from the base URL.",
+      "Page loads without obvious console or tracking errors."
+    ]
+  },
+  "meta_pixel": {
+    "status": "needs_manual_verification",
+    "checks": [
+      {
+        "name": "Pixel Helper shows active pixel",
+        "status": "needs_manual_verification"
+      },
+      {
+        "name": "Events Manager receives PageView",
+        "status": "needs_manual_verification"
+      }
+    ]
+  },
+  "domain_verification": {
+    "status": "needs_manual_verification",
+    "evidence_to_capture": [
+      "helloverbatim.com is verified in Meta Business settings.",
+      "Verified domain is associated with the correct business/ad account."
+    ]
+  },
+  "conversion_events": [
+    {
+      "event_name": "PageView",
+      "status": "needs_manual_verification",
+      "notes": "Verify in Pixel Helper and Events Manager."
+    },
+    {
+      "event_name": "extension_install_clicked",
+      "status": "needs_manual_verification",
+      "notes": "Historical brief event name. Confirm whether current production event is this name or AddToChromeClick before upload."
+    },
+    {
+      "event_name": "extension_installed",
+      "status": "needs_manual_verification",
+      "notes": "Use if available. If not available, mark unavailable before upload."
+    },
+    {
+      "event_name": "debate_run",
+      "status": "needs_manual_verification",
+      "notes": "Use if available. If not available, mark unavailable before upload."
+    },
+    {
+      "event_name": "waitlist_signup",
+      "status": "needs_manual_verification",
+      "notes": "Use if available. Confirm tier property if the form supports it."
+    }
+  ],
+  "waitlist_capture": {
+    "status": "needs_manual_verification",
+    "checks": [
+      {
+        "name": "Email submission works",
+        "status": "needs_manual_verification"
+      },
+      {
+        "name": "Tier is captured if form supports it",
+        "status": "needs_manual_verification"
+      },
+      {
+        "name": "Row lands in Supabase",
+        "status": "needs_manual_verification"
+      }
+    ]
+  },
+  "manual_meta_upload_readiness": {
+    "status": "not_started",
+    "checks": [
+      {
+        "name": "Four selected ads exist locally",
+        "status": "needs_manual_verification"
+      },
+      {
+        "name": "Upload packet exists",
+        "status": "verified",
+        "evidence": "data/paid-ads/meta-upload-packets/first-flight-meta-upload-packet-2026-07-01.json"
+      },
+      {
+        "name": "Meta campaign/ad set/ad IDs still null until upload",
+        "status": "verified"
+      },
+      {
+        "name": "approved_for_upload remains false until Arun manually approves",
+        "status": "verified"
+      }
+    ]
+  },
+  "post_upload_fields_to_record_later": [
+    "meta_campaign_id",
+    "meta_ad_set_id",
+    "meta_ad_id",
+    "launch_datetime",
+    "initial_delivery_status",
+    "first_check_notes"
+  ],
+  "readiness_decision": {
+    "ready_for_upload": false,
+    "ready_for_spend": false,
+    "status": "not_started",
+    "reason": "Landing page, pixel, domain verification, conversion events, and waitlist capture still need manual verification."
+  },
+  "lifecycle_gates": {
+    "approved_for_upload": false,
+    "uploaded_to_meta": false,
+    "human_review_required": true
+  }
+}
