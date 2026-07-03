@@ -29,11 +29,8 @@
     ]
   },
   "domain_verification": {
-    "status": "needs_manual_verification",
-    "evidence_to_capture": [
-      "helloverbatim.com is verified in Meta Business settings.",
-      "Verified domain is associated with the correct business/ad account."
-    ]
+    "status": "verified",
+    "evidence": "Domain verification for helloverbatim.com is verified in Meta Business Settings."
   },
   "conversion_events": [
     {
@@ -86,12 +83,45 @@
       }
     ]
   },
+  "selected_local_pngs": {
+    "status": "verified",
+    "evidence": "Final selected PNGs exist locally."
+  },
+  "final_png_review": {
+    "status": "verified",
+    "checks": [
+      {
+        "concept_id": "concept-01-confident-draft",
+        "status": "verified",
+        "logo_status": "approved",
+        "evidence": "Concept 01 logo version approved."
+      },
+      {
+        "concept_id": "concept-02-before-the-client",
+        "status": "verified",
+        "logo_status": "approved",
+        "evidence": "Concept 02 logo version approved."
+      },
+      {
+        "concept_id": "concept-04-sounds-ready",
+        "status": "verified",
+        "logo_status": "approved",
+        "evidence": "Concept 04 v03 logo version approved."
+      },
+      {
+        "concept_id": "concept-07-missing-disagreement",
+        "status": "verified",
+        "logo_status": "approved",
+        "evidence": "Concept 07 v03 logo version approved."
+      }
+    ]
+  },
   "manual_meta_upload_readiness": {
-    "status": "needs_manual_verification",
+    "status": "verified",
     "checks": [
       {
         "name": "Four selected ads exist locally",
-        "status": "needs_manual_verification"
+        "status": "verified"
       },
       {
         "name": "Upload packet exists",
@@ -103,10 +133,14 @@
         "status": "verified"
       },
       {
-        "name": "approved_for_upload remains false until Arun manually approves",
-        "status": "verified"
+        "name": "Final upload approval",
+        "status": "verified_by_arun"
       }
     ]
+  },
+  "final_upload_approval": {
+    "status": "verified_by_arun",
+    "notes": "First-flight package is ready for manual upload. This does not approve spend."
   },
   "post_upload_fields_to_record_later": [
     "meta_campaign_id",
@@ -117,13 +151,13 @@
     "first_check_notes"
   ],
   "readiness_decision": {
-    "ready_for_upload": false,
+    "ready_for_upload": true,
     "ready_for_spend": false,
-    "status": "needs_manual_verification",
-    "reason": "Landing page, Pixel Helper detection, PageView, and Add-to-Chrome path are verified. Waitlist is not available and is not a blocker. Domain verification, final upload approval, selected local PNG verification, and post-upload Meta IDs remain gated."
+    "status": "ready_for_manual_upload",
+    "reason": "Landing page, Pixel Helper detection, PageView, Add-to-Chrome path, domain verification, selected local PNGs, final PNG review, final upload packet, and Arun's final upload approval are verified. Waitlist is not available and is not a blocker. The package is ready for manual upload, but not ready for spend until Meta campaign/ad set/ad IDs, launch timing, and delivery status are recorded after upload."
   },
   "lifecycle_gates": {
-    "approved_for_upload": false,
+    "approved_for_upload": true,
     "uploaded_to_meta": false,
     "human_review_required": true
   }

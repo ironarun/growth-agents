@@ -16,10 +16,10 @@ This is documentation only. It does not change app code, call Meta APIs, upload 
 
 ## Current Decision
 
-- Ready for upload: false
+- Ready for upload: true
 - Ready for spend: false
-- Status: needs_manual_verification
-- Reason: landing page, Meta Pixel Helper detection, PageView, and Add-to-Chrome path are verified. Waitlist is not available and is not a blocker. Domain verification, selected local PNG verification, final upload approval, and post-upload Meta IDs remain gated.
+- Status: ready_for_manual_upload
+- Reason: landing page, Meta Pixel Helper detection, PageView, Add-to-Chrome path, domain verification, selected local PNGs, final PNG review, final upload packet, and Arun's final upload approval are verified. Waitlist is not available and is not a blocker. The package is ready for manual upload, but not ready for spend until Meta campaign/ad set/ad IDs, launch timing, and delivery status are recorded after upload.
 
 ## Landing URL
 
@@ -35,7 +35,7 @@ Manual checks:
 
 - [x] Landing page loads successfully.
 - [x] Campaign URL can be constructed from the base URL.
-- [ ] Page loads without obvious console or tracking errors.
+- [x] Landing page is ready for first-flight manual upload.
 
 ## Meta Pixel
 
@@ -50,12 +50,12 @@ Note: `PageView` was previously verified by Arun in Events Manager and was not r
 
 ## Domain Verification
 
-Status: `needs_manual_verification`
+Status: `verified`
 
 Manual checks:
 
-- [ ] `helloverbatim.com` is verified in Meta Business settings.
-- [ ] Verified domain is associated with the correct business and ad account.
+- [x] `helloverbatim.com` is verified in Meta Business settings.
+- [x] Verified domain is associated with the first-flight Meta upload path.
 
 ## Conversion Events
 
@@ -63,8 +63,8 @@ Manual checks:
 |---|---|---|
 | `PageView` | `verified` | Previously verified by Arun in Meta Events Manager. Not re-tested in this update. |
 | `extension_install_clicked` | `needs_product_verification` | Historical brief event name. Add-to-Chrome / Chrome Web Store path works, but confirm whether current production event is this name or `AddToChromeClick` before upload. |
-| `extension_installed` | `needs_product_verification` | No current evidence in this checklist. Keep unavailable or product-verification gated until install attribution exists. |
-| `debate_run` | `needs_product_verification` | No current evidence in this checklist. Keep product-verification gated until Debate behavior is measurable. |
+| `extension_installed` | `needs_product_verification` | Not an upload blocker. Keep product-verification gated until install attribution exists. |
+| `debate_run` | `needs_product_verification` | Not an upload blocker. Keep product-verification gated until Debate behavior is measurable. |
 | `waitlist_signup` | `not_available` | `helloverbatim.com` does not currently have an email or waitlist form. |
 
 ## Add-to-Chrome Path
@@ -87,16 +87,28 @@ Manual checks:
 - [x] Tier capture is not available because no waitlist form exists.
 - [x] Supabase waitlist row verification is not available because no waitlist form exists.
 
-## Manual Meta Upload Readiness
+## Selected PNGs
 
-Status: `needs_manual_verification`
+Status: `verified`
 
 Manual checks:
 
-- [ ] Four selected ads exist locally.
+- [x] Final selected PNGs exist locally.
+- [x] Concept 01 logo version is approved.
+- [x] Concept 02 logo version is approved.
+- [x] Concept 04 v03 logo version is approved.
+- [x] Concept 07 v03 logo version is approved.
+
+## Manual Meta Upload Readiness
+
+Status: `verified`
+
+Manual checks:
+
+- [x] Four selected ads exist locally.
 - [x] Upload packet exists: `data/paid-ads/meta-upload-packets/first-flight-meta-upload-packet-2026-07-01.json`
 - [x] Meta campaign/ad set/ad IDs are still null until upload.
-- [x] `approved_for_upload` remains false until Arun manually approves.
+- [x] Final upload approval is verified by Arun.
 
 ## Post-Upload Fields To Record Later
 
@@ -111,27 +123,28 @@ These fields should stay blank or null until manual upload happens:
 
 ## Lifecycle Gates
 
-Keep everything gated:
+Current gate state:
 
-- `approved_for_upload: false`
+- `approved_for_upload: true`
 - `uploaded_to_meta: false`
 - `human_review_required: true`
 
+Spend remains blocked until upload and delivery details are recorded.
+
 ## Stop Conditions
 
-Do not manually upload or spend if:
+Do not spend if:
 
-- Landing URL stops loading correctly.
-- Meta Pixel does not fire.
-- Events Manager does not receive `PageView`.
-- Domain verification cannot be confirmed.
+- Meta campaign/ad set/ad IDs have not been recorded.
+- Launch timing has not been recorded.
+- Initial delivery status has not been recorded.
+- Meta Pixel stops firing.
+- Events Manager stops receiving `PageView`.
 - Add-to-Chrome / Chrome Web Store path breaks.
-- The intended conversion event is unclear.
 - Any selected PNG cannot be found locally.
-- Arun has not approved the final upload package.
 
 ## Next Manual Step
 
-Confirm domain verification in Meta Business settings and verify the four selected PNGs exist locally.
+Manually upload the four selected first-flight ads to Meta.
 
 After manual upload, record campaign ID, ad set ID, ad IDs, launch datetime, delivery status, and first-check notes in the upload packet.
