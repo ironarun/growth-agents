@@ -18,8 +18,8 @@ This is documentation only. It does not change app code, call Meta APIs, upload 
 
 - Ready for upload: false
 - Ready for spend: false
-- Status: not_started
-- Reason: landing page, Pixel, domain verification, conversion events, and waitlist capture still need manual verification.
+- Status: needs_manual_verification
+- Reason: landing page, Meta Pixel Helper detection, PageView, and Add-to-Chrome path are verified. Waitlist is not available and is not a blocker. Domain verification, selected local PNG verification, final upload approval, and post-upload Meta IDs remain gated.
 
 ## Landing URL
 
@@ -29,22 +29,24 @@ URL:
 https://helloverbatim.com
 ```
 
-Status: `needs_manual_verification`
+Status: `verified`
 
 Manual checks:
 
-- [ ] Landing page opens correctly.
-- [ ] Campaign URL can be constructed from the base URL.
+- [x] Landing page loads successfully.
+- [x] Campaign URL can be constructed from the base URL.
 - [ ] Page loads without obvious console or tracking errors.
 
 ## Meta Pixel
 
-Status: `needs_manual_verification`
+Status: `verified`
 
 Manual checks:
 
-- [ ] Meta Pixel Helper shows an active pixel.
-- [ ] Meta Events Manager receives `PageView`.
+- [x] Meta Pixel Helper shows an active pixel.
+- [x] Meta Events Manager receives `PageView`.
+
+Note: `PageView` was previously verified by Arun in Events Manager and was not re-tested in this update.
 
 ## Domain Verification
 
@@ -59,25 +61,35 @@ Manual checks:
 
 | Event | Status | Notes |
 |---|---|---|
-| `PageView` | `needs_manual_verification` | Verify in Pixel Helper and Events Manager. |
-| `extension_install_clicked` | `needs_manual_verification` | Historical brief event name. Confirm whether current production event is this name or `AddToChromeClick` before upload. |
-| `extension_installed` | `needs_manual_verification` | Use if available. If not available, mark unavailable before upload. |
-| `debate_run` | `needs_manual_verification` | Use if available. If not available, mark unavailable before upload. |
-| `waitlist_signup` | `needs_manual_verification` | Use if available. Confirm tier property if the form supports it. |
+| `PageView` | `verified` | Previously verified by Arun in Meta Events Manager. Not re-tested in this update. |
+| `extension_install_clicked` | `needs_product_verification` | Historical brief event name. Add-to-Chrome / Chrome Web Store path works, but confirm whether current production event is this name or `AddToChromeClick` before upload. |
+| `extension_installed` | `needs_product_verification` | No current evidence in this checklist. Keep unavailable or product-verification gated until install attribution exists. |
+| `debate_run` | `needs_product_verification` | No current evidence in this checklist. Keep product-verification gated until Debate behavior is measurable. |
+| `waitlist_signup` | `not_available` | `helloverbatim.com` does not currently have an email or waitlist form. |
 
-## Waitlist Capture
+## Add-to-Chrome Path
 
-Status: `needs_manual_verification`
+Status: `verified`
 
 Manual checks:
 
-- [ ] Email submission works.
-- [ ] Tier is captured if the form supports it.
-- [ ] Row lands in Supabase.
+- [x] Add-to-Chrome / Chrome Web Store path has been checked and works.
+
+## Waitlist Capture
+
+Status: `not_available`
+
+`helloverbatim.com` does not currently have an email or waitlist form, so waitlist capture is not part of this first-flight readiness gate.
+
+Manual checks:
+
+- [x] Email submission is not available because no waitlist form exists.
+- [x] Tier capture is not available because no waitlist form exists.
+- [x] Supabase waitlist row verification is not available because no waitlist form exists.
 
 ## Manual Meta Upload Readiness
 
-Status: `not_started`
+Status: `needs_manual_verification`
 
 Manual checks:
 
@@ -109,17 +121,17 @@ Keep everything gated:
 
 Do not manually upload or spend if:
 
-- Landing URL is not verified.
+- Landing URL stops loading correctly.
 - Meta Pixel does not fire.
 - Events Manager does not receive `PageView`.
 - Domain verification cannot be confirmed.
+- Add-to-Chrome / Chrome Web Store path breaks.
 - The intended conversion event is unclear.
-- Waitlist or install-intent path cannot be verified.
 - Any selected PNG cannot be found locally.
 - Arun has not approved the final upload package.
 
 ## Next Manual Step
 
-Run through the checklist in browser, Meta Pixel Helper, Meta Events Manager, Meta Business settings, and Supabase.
+Confirm domain verification in Meta Business settings and verify the four selected PNGs exist locally.
 
-After verification, update the readiness JSON and upload packet rather than relying on memory.
+After manual upload, record campaign ID, ad set ID, ad IDs, launch datetime, delivery status, and first-check notes in the upload packet.
