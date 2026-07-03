@@ -10,6 +10,9 @@ type OverlayManifest = {
   output_path: string;
   output_filename: string;
   logo_asset_path: string;
+  source_image_width: number;
+  source_image_height: number;
+  detected_ratio: SupportedRatio;
   actual_dimensions: {
     width: number;
     height: number;
@@ -32,6 +35,9 @@ const DEFAULT_LOGO_X = 41;
 const DEFAULT_LOGO_WIDTH = 276;
 const DEFAULT_LOGO_TOP = 997;
 const DEFAULT_BOTTOM_MARGIN = 28;
+const SUPPORTED_RATIOS = ['1:1', '4:5', '9:16'] as const;
+
+type SupportedRatio = (typeof SUPPORTED_RATIOS)[number];
 
 function fail(message: string): never {
   throw new Error(message);
@@ -90,6 +96,17 @@ function scale(value: number, scaleFactor: number): number {
   return Math.round(value * scaleFactor);
 }
 
+function detectRatio(width: number, height: number): SupportedRatio {
+  const ratio = width / height;
+  const tolerance = 0.015;
+
+  if (Math.abs(ratio - 1) <= tolerance) return '1:1';
+  if (Math.abs(ratio - 4 / 5) <= tolerance) return '4:5';
+  if (Math.abs(ratio - 9 / 16) <= tolerance) return '9:16';
+
+  fail(`Unsupported input image ratio ${width}x${height}. Supported ratios: ${SUPPORTED_RATIOS.join(', ')}.`);
+}
+
 function formatMarkdown(manifest: OverlayManifest): string {
   return `# Paid Ads Logo Overlay
 
@@ -107,6 +124,9 @@ Style ID: ${manifest.style_id}
 - Output path: ${manifest.output_path}
 - Output filename: ${manifest.output_filename}
 - Actual dimensions: ${manifest.actual_dimensions.width}x${manifest.actual_dimensions.height}
+- Source image width: ${manifest.source_image_width}
+- Source image height: ${manifest.source_image_height}
+- Detected ratio: ${manifest.detected_ratio}
 
 ## Logo Placement
 
@@ -159,10 +179,7 @@ async function main(): Promise<void> {
     fail(`Could not read input image dimensions: ${inputPath}`);
   }
 
-  if (inputMetadata.width !== inputMetadata.height) {
-    fail(`Input image must be square. Received ${inputMetadata.width}x${inputMetadata.height}.`);
-  }
-
+  const detectedRatio = detectRatio(inputMetadata.width, inputMetadata.height);
   const scaleFactor = inputMetadata.width / BASE_CANVAS;
   const logoWidth = optionalPositiveIntegerArg(args, '--logo-width') ?? scale(DEFAULT_LOGO_WIDTH, scaleFactor);
   const logoX = optionalPositiveIntegerArg(args, '--logo-x') ?? scale(DEFAULT_LOGO_X, scaleFactor);
@@ -174,9 +191,11 @@ async function main(): Promise<void> {
     fail(`Could not read resized logo dimensions: ${logoAssetPath}`);
   }
 
-  const defaultLogoTop = scale(DEFAULT_LOGO_TOP, scaleFactor);
-  const maxLogoTop = inputMetadata.height - logoMetadata.height - scale(DEFAULT_BOTTOM_MARGIN, scaleFactor);
-  const logoY = optionalPositiveIntegerArg(args, '--logo-y') ?? Math.min(defaultLogoTop, maxLogoTop);
+  const bottomMargin = scale(DEFAULT_BOTTOM_MARGIN, scaleFactor);
+  const defaultLogoTop = detectedRatio === '1:1'
+    ? Math.min(scale(DEFAULT_LOGO_TOP, scaleFactor), inputMetadata.height - logoMetadata.height - bottomMargin)
+    : inputMetadata.height - logoMetadata.height - bottomMargin;
+  const logoY = optionalPositiveIntegerArg(args, '--logo-y') ?? defaultLogoTop;
 
   if (logoX + logoMetadata.width > inputMetadata.width || logoY + logoMetadata.height > inputMetadata.height) {
     fail(
@@ -219,6 +238,9 @@ async function main(): Promise<void> {
     output_path: outputPath,
     output_filename: outputFilename,
     logo_asset_path: logoAssetPath,
+    source_image_width: inputMetadata.width,
+    source_image_height: inputMetadata.height,
+    detected_ratio: detectedRatio,
     actual_dimensions: {
       width: outputMetadata.width,
       height: outputMetadata.height,
@@ -244,6 +266,10 @@ async function main(): Promise<void> {
   console.log('concept_id:', manifest.concept_id);
   console.log('style_id:', manifest.style_id);
   console.log('actual_dimensions:', `${manifest.actual_dimensions.width}x${manifest.actual_dimensions.height}`);
+  console.log('detected_ratio:', manifest.detected_ratio);
+  console.log('logo_width:', manifest.logo_width);
+  console.log('logo_x:', manifest.logo_x);
+  console.log('logo_y:', manifest.logo_y);
   console.log('logo_status:', manifest.logo_status);
   console.log('patch_applied:', manifest.patch_applied);
   console.log('background_added:', manifest.background_added);

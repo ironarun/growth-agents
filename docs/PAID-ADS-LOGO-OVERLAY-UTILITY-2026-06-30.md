@@ -4,7 +4,7 @@
 
 This utility overlays the official transparent Verbatim logo onto selected paid ad PNG assets that already have a clean logo-safe footer area.
 
-It is intended for Concept 04 and Concept 07 first-flight assets.
+It supports first-flight editorial-collage assets in `1:1`, `4:5`, and `9:16`.
 
 ## Safety Rule
 
@@ -49,8 +49,18 @@ Defaults are scaled from a 1080x1080 canvas:
 - Logo width: `276px`
 - Logo x: `41px`
 - Logo y: `997px`, adjusted only if needed so the logo remains inside the image bounds
+- Bottom margin: `28px`
 
-Coordinates scale proportionally for larger square assets.
+For `1:1`, coordinates scale proportionally from the approved square standard.
+
+For `4:5` and `9:16`, the utility keeps the same width-normalized logo treatment:
+
+- Logo width: `image width * (276 / 1080)`
+- Logo x: `image width * (41 / 1080)`
+- Bottom margin: `image width * (28 / 1080)`
+- Logo y: `image height - resized logo height - bottom margin`
+
+Unknown ratios fail clearly rather than guessing placement.
 
 These defaults match the approved Concept 02 footer logo treatment documented in:
 
@@ -76,6 +86,12 @@ Files:
 
 The manifest records:
 
+- `source_image_width`
+- `source_image_height`
+- `detected_ratio`
+- `logo_width`
+- `logo_x`
+- `logo_y`
 - `logo_status: official_logo_overlaid`
 - `patch_applied: false`
 - `background_added: false`

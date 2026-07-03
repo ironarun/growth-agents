@@ -26,13 +26,32 @@ The logo overlay utility uses normalized placement based on a 1080x1080 canvas:
 - Logo top y: `997px`
 - Bottom margin guard: `28px`
 
-For non-1080 square assets, these measurements scale proportionally to the input image size.
+For `1:1` assets, these measurements scale proportionally to the input image width.
 
 For the current 1254x1254 selected assets, the default treatment scales to approximately:
 
 - Logo width: `321px`
 - Logo x: `48px`
 - Logo top y: `1158px`
+
+## Placement-Specific Assets
+
+The overlay utility supports:
+
+- `1:1`
+- `4:5`
+- `9:16`
+
+For `4:5` and `9:16` placement-native assets, the logo uses the same width-normalized scale as the approved `1:1` treatment:
+
+- Logo width: `image width * (276 / 1080)`
+- Logo x: `image width * (41 / 1080)`
+- Bottom margin: `image width * (28 / 1080)`
+- Logo y: `image height - resized logo height - bottom margin`
+
+This keeps the logo visually consistent across placement-native assets while respecting the taller canvas.
+
+Unknown ratios should fail clearly rather than guessing a placement.
 
 ## Required Behavior
 
