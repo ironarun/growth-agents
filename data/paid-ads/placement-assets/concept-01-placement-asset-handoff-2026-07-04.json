@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-07-04T00:00:00-04:00",
+  "handoff_id": "concept-01-placement-asset-handoff-2026-07-04",
+  "campaign": "verbatim_paid_ads_first_flight",
+  "concept_id": "concept-01-confident-draft",
+  "concept_name": "Confident Draft",
+  "style_id": "editorial-collage",
+  "source_asset_path": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_selected-candidate-04_finalized-logo_1x1_v01.png",
+  "workflow": "fast_pass",
+  "exact_copy": {
+    "kicker": "FOR CLIENT-FACING AI WORK",
+    "headline": "The draft sounds finished. Has anyone challenged it?",
+    "handwritten_note": "challenge before action",
+    "document_annotations": [
+      "Too certain?",
+      "what is missing?"
+    ],
+    "review_card_heading": "BEFORE CLIENT USE, VERBATIM CHECKS:",
+    "review_card_lines": [
+      "weak claims",
+      "missing counterpoints",
+      "overconfident reasoning"
+    ],
+    "positioning": "Adversarial review for AI",
+    "cta": "Try Verbatim"
+  },
+  "target_assets": [
+    {
+      "ratio": "4:5",
+      "placement": "mobile_feed",
+      "target_dimensions": {
+        "width": 1080,
+        "height": 1350
+      },
+      "output_filename": "verbatim_meta_01_confident-draft_editorial-collage_placement-candidate-01_no-logo_4x5_v01.png",
+      "prompt": "Create a 4:5 1080x1350 Meta ad for Verbatim in the approved light/pink premium editorial collage style. Recompose the square Concept 01 idea for mobile feed, do not crop it. Required text: \"FOR CLIENT-FACING AI WORK\"; \"The draft sounds finished. Has anyone challenged it?\"; \"challenge before action\"; \"Too certain?\"; \"what is missing?\"; \"BEFORE CLIENT USE, VERBATIM CHECKS:\"; \"weak claims\"; \"missing counterpoints\"; \"overconfident reasoning\"; \"Adversarial review for AI\"; \"Try Verbatim\". Use ivory/off-white paper, blush surfaces, Verbatim pink review annotations, a draft sheet, and a clean review card. Reserve clean bottom-left space for official logo overlay. Do not invent or approximate the Verbatim logo. No fake UI, fake metrics, stock people, robots, black background, tiny text, truth layer language, or correctness guarantees."
+    },
+    {
+      "ratio": "9:16",
+      "placement": "stories_reels",
+      "target_dimensions": {
+        "width": 1080,
+        "height": 1920
+      },
+      "output_filename": "verbatim_meta_01_confident-draft_editorial-collage_placement-candidate-01_no-logo_9x16_v01.png",
+      "prompt": "Create a 9:16 1080x1920 Meta Stories/Reels ad for Verbatim in the approved light/pink premium editorial collage style. Purpose-build the vertical layout, do not crop the square Concept 01 asset. Required text: \"FOR CLIENT-FACING AI WORK\"; \"The draft sounds finished. Has anyone challenged it?\"; \"challenge before action\"; \"Too certain?\"; \"what is missing?\"; \"BEFORE CLIENT USE, VERBATIM CHECKS:\"; \"weak claims\"; \"missing counterpoints\"; \"overconfident reasoning\"; \"Adversarial review for AI\"; \"Try Verbatim\". Keep the headline large and mobile-readable, use sparse pink annotations, a draft sheet, compact review card, and safe CTA/footer placement. Reserve clean bottom-left space for official logo overlay. Do not invent or approximate the Verbatim logo. No fake UI, fake metrics, stock people, robots, black background, tiny text, truth layer language, or correctness guarantees."
+    }
+  ],
+  "review_checklist": [
+    "Asset is recomposed for the requested ratio, not cropped from square.",
+    "Approved Concept 01 copy is preserved exactly.",
+    "Logo-safe bottom-left area is clean.",
+    "No generated or approximated Verbatim logo appears.",
+    "Text is readable on mobile.",
+    "No fake UI, fake metrics, stock people, robots, black background, or correctness guarantees.",
+    "Asset remains unapproved until human review."
+  ],
+  "lifecycle": {
+    "generated_assets_created": false,
+    "approved_for_generation": false,
+    "approved_for_upload": false,
+    "uploaded_to_meta": false,
+    "meta_ad_id": null,
+    "human_review_required": true
+  }
+}
