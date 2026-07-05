@@ -1,0 +1,175 @@
+{
+  "generated_at": "2026-07-04T00:00:00-04:00",
+  "last_updated_at": "2026-07-04T00:00:00-04:00",
+  "packet_id": "first-flight-meta-upload-packet-2026-07-04",
+  "campaign": {
+    "name": "Verbatim First Flight - Consultants - 2026-07",
+    "objective": "Traffic",
+    "performance_goal": "landing page views",
+    "daily_budget": 20,
+    "currency": "USD",
+    "status": "draft",
+    "published": false,
+    "pixel": {
+      "name": "Verbatim Website",
+      "id": "26411512478545039"
+    }
+  },
+  "ad_set": {
+    "name": "Consultants - Static Editorial - First Flight",
+    "placement_recommendation": "Desktop-focused first upload if Meta supports it cleanly. Prioritize desktop feeds / desktop traffic because Verbatim is a Chrome extension.",
+    "mobile_desktop_constraint": "Chrome extensions cannot be installed through normal mobile Chrome or iOS browser flows. Do not treat blended mobile plus desktop conversion rate as a valid extension adoption signal.",
+    "mobile_reporting_note": "If mobile placements are used, report them separately and do not judge extension adoption from mobile install conversion rate.",
+    "status": "draft",
+    "published": false
+  },
+  "landing_page": {
+    "intended_final_url": "https://helloverbatim.com/consultants",
+    "status": "not_live",
+    "note": "The /consultants landing page is not yet live. Final preview and tracking checks are still required before publishing."
+  },
+  "tracking": {
+    "utm_source": "meta",
+    "utm_medium": "paid_social",
+    "utm_campaign": "verbatim_first_flight_consultants_2026_07",
+    "url_pattern": "https://helloverbatim.com/consultants?headline={headline_variant}&utm_source=meta&utm_medium=paid_social&utm_campaign=verbatim_first_flight_consultants_2026_07&utm_content={utm_content}",
+    "tracking_verification_required": true
+  },
+  "creative_defaults": {
+    "primary_text": "AI work can sound finished before it has been challenged.\n\nVerbatim pressure-tests important AI responses before you rely on them.",
+    "headline": "Adversarial review for AI",
+    "description": "Pressure-test AI work before it reaches a client.",
+    "site_cta_language": "Add to Chrome · Free",
+    "meta_button_fallback": "Learn More",
+    "cta_note": "Use Add to Chrome · Free in ad copy / destination page. If Meta does not allow the dot character or exact CTA text in the button field, use Meta's closest built-in CTA: Learn More."
+  },
+  "source_indexes": [
+    "data/paid-ads/placement-assets/concept-01-placement-assets-2026-07-04.json",
+    "data/paid-ads/placement-assets/concept-04-placement-assets-2026-07-04.json"
+  ],
+  "manual_upload_status": {
+    "campaign_status": "draft",
+    "published": false,
+    "landing_page_status": "not_live",
+    "final_preview_required": true,
+    "tracking_verification_required": true,
+    "draft_ads": [
+      {
+        "concept_id": "concept-01-confident-draft",
+        "draft_ad_name": "not_recorded",
+        "media_uploaded": true,
+        "uploaded_to_meta": "draft_only",
+        "published": false,
+        "meta_ad_id": null,
+        "final_preview_required": true,
+        "landing_page_required": true,
+        "tracking_verification_required": true
+      },
+      {
+        "concept_id": "concept-04-sounds-ready",
+        "draft_ad_name": "not_recorded",
+        "media_uploaded": true,
+        "uploaded_to_meta": "draft_only",
+        "published": false,
+        "meta_ad_id": null,
+        "final_preview_required": true,
+        "landing_page_required": true,
+        "tracking_verification_required": true
+      }
+    ]
+  },
+  "ads": [
+    {
+      "concept_id": "concept-01-confident-draft",
+      "concept_name": "Confident Draft",
+      "utm_content": "concept_01_confident_draft",
+      "headline_variant": "challenged",
+      "destination_url": "https://helloverbatim.com/consultants?headline=challenged&utm_source=meta&utm_medium=paid_social&utm_campaign=verbatim_first_flight_consultants_2026_07&utm_content=concept_01_confident_draft",
+      "primary_text": "AI work can sound finished before it has been challenged.\n\nVerbatim pressure-tests important AI responses before you rely on them.",
+      "headline": "Adversarial review for AI",
+      "description": "Pressure-test AI work before it reaches a client.",
+      "cta": {
+        "site_language": "Add to Chrome · Free",
+        "meta_button_fallback": "Learn More"
+      },
+      "assets_by_placement": {
+        "feed_square_1x1": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_selected-candidate-04_finalized-logo_1x1_v01.png",
+        "mobile_feed_4x5": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_placement-candidate-01_official-logo_4x5_v01.png",
+        "stories_reels_9x16": "assets/paid-ads/selected-candidates/verbatim_meta_01_confident-draft_editorial-collage_placement-candidate-01_official-logo_9x16_v01.png"
+      },
+      "placement_note": "Use desktop-focused placements as the cleanest extension adoption test. Mobile placement assets are documented but should be reported separately.",
+      "approved_for_upload": false,
+      "uploaded_to_meta": "draft_only",
+      "published": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "final_preview_required": true,
+      "landing_page_required": true,
+      "tracking_verification_required": true
+    },
+    {
+      "concept_id": "concept-04-sounds-ready",
+      "concept_name": "Polished Is Not Pressure Tested",
+      "utm_content": "concept_04_sounds_ready",
+      "headline_variant": "polished",
+      "destination_url": "https://helloverbatim.com/consultants?headline=polished&utm_source=meta&utm_medium=paid_social&utm_campaign=verbatim_first_flight_consultants_2026_07&utm_content=concept_04_sounds_ready",
+      "primary_text": "AI work can sound finished before it has been challenged.\n\nVerbatim pressure-tests important AI responses before you rely on them.",
+      "headline": "Adversarial review for AI",
+      "description": "Pressure-test AI work before it reaches a client.",
+      "cta": {
+        "site_language": "Add to Chrome · Free",
+        "meta_button_fallback": "Learn More"
+      },
+      "assets_by_placement": {
+        "feed_square_1x1": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_selected-candidate-02_official-logo_1x1_v03.png",
+        "mobile_feed_4x5": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_placement-candidate-01_official-logo_4x5_v01.png",
+        "stories_reels_9x16": "assets/paid-ads/selected-candidates/verbatim_meta_04_polished-pressure-tested_editorial-collage_placement-candidate-01_official-logo_9x16_v01.png"
+      },
+      "placement_note": "Use desktop-focused placements as the cleanest extension adoption test. Mobile placement assets are documented but should be reported separately.",
+      "approved_for_upload": false,
+      "uploaded_to_meta": "draft_only",
+      "published": false,
+      "meta_campaign_id": null,
+      "meta_ad_set_id": null,
+      "meta_ad_id": null,
+      "manual_upload_required": true,
+      "human_review_required": true,
+      "final_preview_required": true,
+      "landing_page_required": true,
+      "tracking_verification_required": true
+    }
+  ],
+  "human_review_gates": [
+    "Confirm /consultants page is live before publishing.",
+    "Confirm final Meta ad preview before publishing.",
+    "Confirm headline variant URLs resolve correctly.",
+    "Confirm Pixel Verbatim Website ID 26411512478545039 is selected.",
+    "Confirm objective is Traffic and performance goal is landing page views.",
+    "Confirm daily budget is $20.",
+    "Confirm desktop-focused placement setup if Meta supports it cleanly.",
+    "Confirm mobile placement results are reported separately if mobile placements are used.",
+    "Confirm tracking and landing page view delivery before publishing.",
+    "Confirm final PNGs exist locally.",
+    "Confirm no ad is marked published before final human approval."
+  ],
+  "do_not_upload_notes": [
+    "Do not publish until the consultants landing page exists.",
+    "Do not publish until final previews are checked.",
+    "Do not publish until tracking verification is complete.",
+    "Do not publish if Meta Pixel / dataset selection is unclear.",
+    "Do not publish if placement settings blend mobile and desktop in a way that hides the extension install constraint.",
+    "Do not publish if any selected PNG is missing locally.",
+    "Do not invent Meta campaign, ad set, or ad IDs."
+  ],
+  "lifecycle_gates": {
+    "approved_for_upload": false,
+    "uploaded_to_meta": "draft_only",
+    "published": false,
+    "meta_campaign_id": null,
+    "meta_ad_set_id": null,
+    "human_review_required": true
+  }
+}
