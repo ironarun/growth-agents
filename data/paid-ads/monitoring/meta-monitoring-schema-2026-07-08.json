@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-07-08T00:00:00-04:00",
+  "schema_id": "meta-monitoring-schema-2026-07-08",
+  "purpose": "Read-only monitoring schema for Verbatim Paid Ads Agent v0.1.",
+  "read_only": true,
+  "current_campaign": {
+    "campaign_name": "Verbatim First Flight - Consultants - 2026-07",
+    "campaign_id": "6962618508954",
+    "objective": "Traffic",
+    "adset_name": "Consultants - Static Editorial - First Flight",
+    "adset_id": "6962618509154",
+    "budget_daily": 20,
+    "currency": "USD",
+    "placements": ["facebook_desktop"],
+    "performance_goal": "landing_page_views",
+    "pixel": {
+      "name": "Verbatim Website",
+      "id": "26411512478545039"
+    },
+    "custom_conversion": {
+      "name": "Add to Chrome - consultants",
+      "id": null
+    },
+    "landing_page": "/consultants"
+  },
+  "ads": [
+    {
+      "concept_id": "concept-01-confident-draft",
+      "ad_name": "concept-01-finished-challenged",
+      "ad_id": "6964007863354"
+    },
+    {
+      "concept_id": "concept-04-sounds-ready",
+      "ad_name": "concept-04-polished-problem",
+      "ad_id": "6964011910954"
+    }
+  ],
+  "required_env_vars": [
+    "META_ACCESS_TOKEN",
+    "META_AD_ACCOUNT_ID",
+    "META_CAMPAIGN_ID",
+    "META_ADSET_ID",
+    "META_AD_IDS",
+    "META_PIXEL_ID",
+    "META_CUSTOM_CONVERSION_NAME"
+  ],
+  "recommended_env_vars": [
+    "META_API_VERSION",
+    "META_CUSTOM_CONVERSION_ID",
+    "META_MONITORING_SINCE",
+    "META_MONITORING_UNTIL",
+    "META_MONITORING_OUTPUT_DIR",
+    "META_READ_ONLY"
+  ],
+  "required_meta_permissions": [
+    "ads_read",
+    "read_insights"
+  ],
+  "entities": {
+    "campaigns": [
+      "campaign_id",
+      "campaign_name",
+      "objective",
+      "configured_status",
+      "effective_status",
+      "daily_budget_source",
+      "created_time",
+      "start_time",
+      "stop_time",
+      "landing_page",
+      "pixel_id",
+      "custom_conversion_name",
+      "raw_snapshot_path"
+    ],
+    "ad_sets": [
+      "adset_id",
+      "campaign_id",
+      "adset_name",
+      "configured_status",
+      "effective_status",
+      "daily_budget",
+      "optimization_goal",
+      "billing_event",
+      "bid_strategy",
+      "publisher_platforms",
+      "device_platforms",
+      "placements",
+      "raw_snapshot_path"
+    ],
+    "ads": [
+      "ad_id",
+      "adset_id",
+      "campaign_id",
+      "ad_name",
+      "concept_id",
+      "configured_status",
+      "effective_status",
+      "creative_id",
+      "destination_url",
+      "utm_campaign",
+      "utm_content",
+      "headline_variant",
+      "raw_snapshot_path"
+    ],
+    "creatives_concepts": [
+      "concept_id",
+      "concept_name",
+      "creative_id",
+      "selected_asset_paths",
+      "primary_text",
+      "headline",
+      "description",
+      "cta",
+      "logo_status",
+      "approved_for_upload",
+      "uploaded_to_meta",
+      "human_review_required",
+      "source_index_path"
+    ],
+    "daily_insights": [
+      "date",
+      "campaign_id",
+      "adset_id",
+      "ad_id",
+      "concept_id",
+      "spend",
+      "impressions",
+      "reach",
+      "link_clicks",
+      "landing_page_views",
+      "ctr",
+      "cpc",
+      "cost_per_landing_page_view",
+      "add_to_chrome_custom_conversion_count",
+      "cost_per_add_to_chrome_custom_conversion",
+      "actions_raw",
+      "cost_per_action_type_raw",
+      "raw_snapshot_path"
+    ],
+    "landing_page_custom_conversion_events": [
+      "date",
+      "pixel_id",
+      "custom_conversion_name",
+      "custom_conversion_id",
+      "event_name",
+      "event_count",
+      "attribution_source",
+      "matched_action_type",
+      "campaign_id",
+      "adset_id",
+      "ad_id",
+      "notes"
+    ],
+    "recommendations": [
+      "generated_at",
+      "scope",
+      "severity",
+      "observation",
+      "recommendation",
+      "evidence",
+      "human_review_required",
+      "allowed_action_type",
+      "blocked_automation",
+      "status"
+    ]
+  },
+  "metric_definitions": {
+    "spend": "Meta reported spend for the row date and ad.",
+    "impressions": "Meta reported impressions.",
+    "reach": "Meta reported reach when available.",
+    "link_clicks": "Meta link clicks or inline link clicks, depending on the selected insights field.",
+    "landing_page_views": "Meta landing page view action count when available.",
+    "ctr": "link_clicks divided by impressions. Null when impressions are zero or missing.",
+    "cpc": "spend divided by link_clicks. Null when link clicks are zero or missing.",
+    "cost_per_landing_page_view": "spend divided by landing_page_views. Null when landing page views are zero or missing.",
+    "add_to_chrome_custom_conversion_count": "Count for the Add to Chrome - consultants custom conversion when available.",
+    "cost_per_add_to_chrome_custom_conversion": "spend divided by add_to_chrome_custom_conversion_count. Null when the count is zero or missing."
+  },
+  "recommended_output_artifacts": {
+    "raw_snapshots": [
+      "output/run-{timestamp}/raw/meta/campaign-6962618508954.json",
+      "output/run-{timestamp}/raw/meta/adset-6962618509154.json",
+      "output/run-{timestamp}/raw/meta/ad-6964007863354.json",
+      "output/run-{timestamp}/raw/meta/ad-6964011910954.json",
+      "output/run-{timestamp}/raw/meta/insights-by-ad.json"
+    ],
+    "normalized_summaries": [
+      "output/run-{timestamp}/meta-campaign-monitoring-summary.json",
+      "output/run-{timestamp}/meta-campaign-monitoring-daily-report.md"
+    ]
+  },
+  "recommendation_statuses": [
+    "monitor_only",
+    "needs_tracking_verification",
+    "needs_human_review",
+    "ready_for_manual_decision",
+    "insufficient_data"
+  ],
+  "blocked_automation": [
+    "pause_ad",
+    "change_budget",
+    "change_placements",
+    "edit_creative",
+    "edit_landing_page_url",
+    "publish_ad"
+  ],
+  "recommended_first_script": "scripts/ingest-meta-campaign-monitoring.ts"
+}
