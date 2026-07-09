@@ -45,6 +45,7 @@ const requiredEnv = [
   "META_AD_IDS",
   "META_PIXEL_ID",
   "META_CUSTOM_CONVERSION_NAME",
+  "META_CUSTOM_CONVERSION_ID",
 ];
 
 function requireEnv(name: string): string {
@@ -143,6 +144,8 @@ async function main() {
     .filter(Boolean);
   const pixelId = requireEnv("META_PIXEL_ID");
   const customConversionName = requireEnv("META_CUSTOM_CONVERSION_NAME");
+  const customConversionId = requireEnv("META_CUSTOM_CONVERSION_ID");
+  const customEventName = process.env.META_CUSTOM_EVENT_NAME?.trim() || "AddToChromeClick";
 
   const version = process.env.META_API_VERSION?.trim() || "v23.0";
   const since = process.env.META_MONITORING_SINCE?.trim() || "2026-07-08";
@@ -220,9 +223,10 @@ async function main() {
     const linkClicks = actionValue(row.actions, "link_click");
     const landingPageViews = findActionContains(row.actions, "landing_page_view");
     const addToChromeEvents =
-      findActionContains(row.actions, "addtochrome") +
-      findActionContains(row.actions, "add_to_chrome") +
-      findActionContains(row.actions, "custom");
+      actionValue(row.actions, customEventName) +
+      actionValue(row.actions, `offsite_conversion.custom.${customConversionId}`) +
+      actionValue(row.actions, `onsite_conversion.custom.${customConversionId}`) +
+      findActionContains(row.actions, customConversionId);
 
     return {
       campaignId: row.campaign_id,
@@ -286,6 +290,8 @@ async function main() {
       adAccountId,
       pixelId,
       customConversionName,
+      customConversionId,
+      customEventName,
     },
     campaign,
     adset,
