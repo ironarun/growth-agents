@@ -45,6 +45,8 @@ Removed:
 - Facebook Right Column
 - Facebook Marketplace
 - Facebook Search Results
+
+Disabled setting:
 - Limited spending to excluded placements
 
 Reason:

@@ -109,7 +109,7 @@ const humanChangeLog = [
   {
     timestampEt: "2026-07-10 01:55 AM ET",
     change:
-      "Manual placement correction to Facebook Feed only. Removed Right Column, Marketplace, Search Results, and limited spending to excluded placements.",
+      "Manual placement correction to Facebook Feed only. Removed Right Column, Marketplace, Search Results, and disabled the limited spending setting for excluded placements.",
   },
 ];
 
@@ -144,6 +144,35 @@ function findActionContains(actions: MetaInsightAction[] | undefined, fragment: 
   return actions
     .filter((action) => action.action_type.toLowerCase().includes(fragment.toLowerCase()))
     .reduce((sum, action) => sum + num(action.value), 0);
+}
+
+function addToChromeActionValue(
+  actions: MetaInsightAction[] | undefined,
+  customEventName: string,
+  customConversionId: string,
+): number {
+  if (!actions) return 0;
+
+  const countedActionTypes = new Set<string>();
+  const exactActionTypes = new Set([
+    customEventName,
+    `offsite_conversion.custom.${customConversionId}`,
+    `onsite_conversion.custom.${customConversionId}`,
+  ]);
+
+  return actions.reduce((sum, action) => {
+    const actionType = action.action_type;
+    const shouldCount =
+      exactActionTypes.has(actionType) ||
+      actionType.includes(customConversionId);
+
+    if (!shouldCount || countedActionTypes.has(actionType)) {
+      return sum;
+    }
+
+    countedActionTypes.add(actionType);
+    return sum + num(action.value);
+  }, 0);
 }
 
 function isoStamp(): string {
@@ -220,11 +249,7 @@ function normalizeInsightRow(
   const outboundClicks = actionValue(row.outbound_clicks, "outbound_click");
   const linkClicks = actionValue(row.actions, "link_click");
   const landingPageViews = findActionContains(row.actions, "landing_page_view");
-  const addToChromeEvents =
-    actionValue(row.actions, customEventName) +
-    actionValue(row.actions, `offsite_conversion.custom.${customConversionId}`) +
-    actionValue(row.actions, `onsite_conversion.custom.${customConversionId}`) +
-    findActionContains(row.actions, customConversionId);
+  const addToChromeEvents = addToChromeActionValue(row.actions, customEventName, customConversionId);
 
   return {
     campaignId: row.campaign_id,
