@@ -10,5 +10,10 @@ data/browser-profiles/
 # Local paid ads research input files
 input/paid-ads/*.local.txt
 
+# Generated paid ads monitoring outputs
+data/paid-ads/monitoring/raw/
+data/paid-ads/monitoring/normalized/
+data/paid-ads/monitoring/reports/
+
 # Local manual Conversation Scout seed files
 agents/conversation-scout/examples/*.local.json
