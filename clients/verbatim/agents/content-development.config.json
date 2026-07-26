@@ -1,0 +1,8 @@
+{
+  "clientName": "Verbatim",
+  "clientSlug": "verbatim",
+  "agent": "content-development",
+  "status": "stub",
+  "humanReviewOnly": true,
+  "notes": "Stub config only. Content development agent is not built in this pass."
+}

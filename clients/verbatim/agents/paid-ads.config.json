@@ -1,0 +1,39 @@
+{
+  "clientName": "Verbatim",
+  "clientSlug": "verbatim",
+  "campaignName": "Verbatim First Flight - Consultants - 2026-07",
+  "campaignId": "6962618508954",
+  "adsetName": "Consultants - Static Editorial - First Flight",
+  "adsetId": "6962618509154",
+  "adIds": [
+    "6964007863354",
+    "6964011910954"
+  ],
+  "adAccountId": "1523367249428642",
+  "pixelId": "26411512478545039",
+  "customConversionName": "Add to Chrome - consultants",
+  "customConversionId": "1314018147386966",
+  "customEventName": "AddToChromeClick",
+  "landingPageUrl": "https://helloverbatim.com/consultants",
+  "primaryCta": "Add to Chrome",
+  "humanReviewOnly": true,
+  "monitoringDefaultSince": "2026-07-08",
+  "monitoringOutputDir": "data/paid-ads/monitoring",
+  "operatorReportDir": "data/paid-ads/operator-reports",
+  "decisionLogPointers": [
+    "clients/verbatim/decision-log.md",
+    "docs/PAID-ADS-FIRST-FLIGHT-DECISION-LOG-2026-07.md"
+  ],
+  "knownChanges": [
+    {
+      "timestampEt": "2026-07-10 01:55 AM ET",
+      "effectiveDate": "2026-07-10",
+      "change": "Manual placement correction to Facebook Feed only. Removed Right Column, Marketplace, Search Results, and disabled the limited spending setting for excluded placements."
+    }
+  ],
+  "thresholds": {
+    "lowSpend": 10,
+    "thinLandingPageViews": 20,
+    "placementSpendShareRisk": 0.5
+  }
+}

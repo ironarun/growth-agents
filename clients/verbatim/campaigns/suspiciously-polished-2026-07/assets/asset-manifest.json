@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "suspiciously-polished-2026-07",
+  "assets_present_in_package": false,
+  "reason": "The approved PNG binaries were not included among the source files available for this workspace build.",
+  "required_assets": [
+    {
+      "asset_id": "spc-female-1x1-v01",
+      "meta_ad_name": "SPC - Female - 1x1 - v01",
+      "destination_path": "assets/spc-female-1x1-v01.png",
+      "known_source_filename": "verbatim_suspiciously_polished_final_2.png",
+      "format": "PNG",
+      "aspect_ratio": "1:1",
+      "status": "approved_missing_binary",
+      "requirements": [
+        "Official Verbatim logo",
+        "Question mark after suspiciously polished?",
+        "Image CTA says Add to Chrome",
+        "No Free language"
+      ]
+    },
+    {
+      "asset_id": "spc-male-1x1-v01",
+      "meta_ad_name": "SPC - Male - 1x1 - v01",
+      "destination_path": "assets/spc-male-1x1-v01.png",
+      "known_source_filename": "verbatim_suspiciously_polished_final_1.png",
+      "format": "PNG",
+      "aspect_ratio": "1:1",
+      "status": "approved_missing_binary",
+      "requirements": [
+        "Official Verbatim logo",
+        "Question mark after suspiciously polished?",
+        "Image CTA says Add to Chrome",
+        "No Free language"
+      ]
+    }
+  ],
+  "asset_change_rule": "Do not regenerate or alter approved creative without a new human approval."
+}

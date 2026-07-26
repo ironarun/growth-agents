@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "suspiciously-polished-2026-07",
+  "client_id": "verbatim",
+  "name": "Verbatim First Flight - Suspiciously Polished - Consumer - 2026-07",
+  "channel": "meta",
+  "source_state_as_of": "2026-07-25",
+  "workspace_generated_on": "2026-07-26",
+  "status": {
+    "workspace_state": "launch_ready_pending_delivery_confirmation",
+    "meta_review": "unconfirmed",
+    "delivery": "unconfirmed",
+    "live_spend": "unconfirmed",
+    "note": "The campaign was built and verified. This workspace does not claim live delivery until Meta review, impressions, and placement delivery are recorded."
+  },
+  "objective": "Sales",
+  "purpose": "Test whether a consumer-facing message about suspiciously polished AI answers can convert heavy AI users on Meta.",
+  "hypothesis": "Heavy daily AI users recognize when an answer looks too smooth or too confident. Verbatim gives that doubt somewhere to go by having a rival model challenge the answer.",
+  "experiment_design": {
+    "type": "controlled_two_creative_test",
+    "constant_variables": [
+      "campaign",
+      "ad_set",
+      "audience",
+      "copy",
+      "landing_page",
+      "conversion_event",
+      "placement"
+    ],
+    "tested_variable": "male versus female creative image"
+  },
+  "audience": {
+    "description": "Heavy daily users of ChatGPT, Claude, Gemini, Grok, Perplexity, and similar AI tools.",
+    "geography": [
+      "United States"
+    ],
+    "targeting": "broad",
+    "device": [
+      "desktop"
+    ],
+    "placements": [
+      "Facebook Feed"
+    ],
+    "excluded_positioning": [
+      "consultant-specific",
+      "lawyer-specific",
+      "enterprise governance",
+      "general AI skepticism"
+    ]
+  },
+  "meta": {
+    "campaign_name": "Verbatim First Flight - Suspiciously Polished - Consumer - 2026-07",
+    "ad_set_name": "Consumer - Broad - Desktop - AddToChromeClick",
+    "conversion_location": "Website",
+    "dataset_name": "Verbatim Website",
+    "pixel_id": "26411512478545039",
+    "custom_conversion_name": "Add to Chrome",
+    "source_event": "AddToChromeClick",
+    "cta": "Download",
+    "url_parameters_field": "blank",
+    "website_url_field": "full tracked URL"
+  },
+  "conversion_event": {
+    "name": "AddToChromeClick",
+    "parameters": {
+      "page": "suspiciously-polished",
+      "headline": "suspiciously-polished"
+    },
+    "meaning": "Add-to-Chrome click intent. It is not a confirmed extension install.",
+    "ignore_for_reporting": [
+      "SubscribedButtonClick"
+    ]
+  },
+  "landing_page": {
+    "url": "https://helloverbatim.com/suspiciously-polished",
+    "route": "/suspiciously-polished",
+    "implementation_repo": "ai-highlighter",
+    "documentation": "landing-page.md",
+    "confirmed_issue": "The production page still uses inaccurate free-product language as of 2026-07-26."
+  },
+  "utm": {
+    "utm_source": "meta",
+    "utm_medium": "paid_social",
+    "utm_campaign": "suspiciously_polished_consumer_2026_07",
+    "headline": "suspiciously-polished"
+  },
+  "approved_copy": {
+    "primary_text": "Stop accepting the first answer AI gives you. Verbatim has a rival model challenge it, so you can act with confidence.",
+    "headline": "Adversarial Review for ChatGPT and Claude",
+    "description": "★★★★★ \"It acts as a truth layer for my prompts.\"",
+    "cta": "Download",
+    "image_cta": "Add to Chrome"
+  },
+  "ads": [
+    {
+      "ad_id": "spc-female-1x1-v01",
+      "meta_name": "SPC - Female - 1x1 - v01",
+      "creative_variable": "female",
+      "utm_content": "concept_01_female",
+      "destination_url": "https://helloverbatim.com/suspiciously-polished?headline=suspiciously-polished&utm_source=meta&utm_medium=paid_social&utm_campaign=suspiciously_polished_consumer_2026_07&utm_content=concept_01_female",
+      "asset_path": "assets/spc-female-1x1-v01.png",
+      "asset_status": "approved_binary_not_in_workspace_package"
+    },
+    {
+      "ad_id": "spc-male-1x1-v01",
+      "meta_name": "SPC - Male - 1x1 - v01",
+      "creative_variable": "male",
+      "utm_content": "concept_02_male",
+      "destination_url": "https://helloverbatim.com/suspiciously-polished?headline=suspiciously-polished&utm_source=meta&utm_medium=paid_social&utm_campaign=suspiciously_polished_consumer_2026_07&utm_content=concept_02_male",
+      "asset_path": "assets/spc-male-1x1-v01.png",
+      "asset_status": "approved_binary_not_in_workspace_package"
+    }
+  ],
+  "approvals": {
+    "campaign_direction": "approved",
+    "landing_page": "deployed",
+    "production_pageview": "verified",
+    "production_add_to_chrome_click": "verified",
+    "creative_copy": "approved",
+    "male_creative": "approved",
+    "female_creative": "approved",
+    "manual_meta_upload": "completed_or_ready",
+    "live_delivery": "pending_confirmation"
+  },
+  "known_risks": [
+    {
+      "id": "pricing-copy-mismatch",
+      "severity": "high",
+      "status": "confirmed_open",
+      "owner_repo": "ai-highlighter",
+      "description": "The live landing page says Add to Chrome · Free and describes Verbatim as a free Chrome extension, which conflicts with the paid product model."
+    },
+    {
+      "id": "placement-expansion",
+      "severity": "medium",
+      "status": "monitor",
+      "owner_repo": "growth-agents",
+      "description": "Verify that delivery remains Facebook Feed on desktop and does not leak into expanded placements."
+    },
+    {
+      "id": "conversion-semantics",
+      "severity": "medium",
+      "status": "monitor",
+      "owner_repo": "growth-agents",
+      "description": "AddToChromeClick measures click intent, not a confirmed install or paid conversion."
+    },
+    {
+      "id": "early-signal-overreaction",
+      "severity": "medium",
+      "status": "monitor",
+      "owner_repo": "growth-agents",
+      "description": "Do not optimize from the first few hours unless there is a clear operational failure."
+    }
+  ],
+  "monitoring": {
+    "first_check": [
+      "Meta review result",
+      "impressions begin",
+      "destination resolves",
+      "PageView continues firing",
+      "AddToChromeClick continues firing",
+      "placement delivery matches configuration"
+    ],
+    "first_report_metrics": [
+      "spend",
+      "impressions",
+      "CPM",
+      "link CTR",
+      "outbound clicks",
+      "landing page views",
+      "AddToChromeClick",
+      "cost per AddToChromeClick",
+      "male versus female delivery and performance",
+      "placement delivery"
+    ],
+    "allowed_recommendations": [
+      "hold",
+      "investigate",
+      "pause",
+      "iterate"
+    ],
+    "automated_actions": false
+  },
+  "documents": {
+    "brief": "campaign-brief.md",
+    "landing_page": "landing-page.md",
+    "ads": "ads.md",
+    "tracking_checklist": "tracking-checklist.md",
+    "launch_report": "launch-report.md",
+    "decision_log": "decision-log.md",
+    "asset_manifest": "assets/asset-manifest.json"
+  }
+}

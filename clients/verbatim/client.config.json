@@ -1,0 +1,82 @@
+{
+  "schema_version": "0.1",
+  "workspace_type": "growth_agents_client_workspace",
+  "client_id": "verbatim",
+  "client_name": "Verbatim",
+  "source_state_as_of": "2026-07-25",
+  "workspace_generated_on": "2026-07-26",
+  "status": "active",
+  "positioning": {
+    "one_line": "Verbatim is a confidence layer for AI work.",
+    "promise": "It helps users pressure-test important AI answers before relying on them.",
+    "current_acquisition_wedge": "Debate",
+    "consumer_action_language": "Get a second opinion on an AI answer that feels too polished or too confident."
+  },
+  "product_truth": {
+    "debate": "The skepticism layer. Debate starts from the Verbatim V button.",
+    "library": "The memory layer. Highlighting saves what the user wants to keep.",
+    "highlighting_rule": "We do not highlight what we distrust. We highlight what we want to keep.",
+    "council": "Compares multiple models in parallel.",
+    "insights": "Tracks model behavior and performance patterns over time."
+  },
+  "commercial_model": {
+    "type": "trial_to_paid_subscription",
+    "free_product": false,
+    "public_copy_rule": "Do not call Verbatim a free Chrome extension or use Add to Chrome Â· Free.",
+    "pricing_source_of_truth": "ai-highlighter product configuration or current production pricing surface"
+  },
+  "repositories": {
+    "gtm_infrastructure": {
+      "name": "growth-agents",
+      "windows_path": "C:\\Users\\Arun\\growth-agents",
+      "responsibility": "Client context, campaigns, GTM skills, reports, and decision records."
+    },
+    "product": {
+      "name": "ai-highlighter",
+      "windows_path": "C:\\Users\\Arun\\ai-highlighter",
+      "responsibility": "Verbatim product, website, funnel instrumentation, and production application changes."
+    }
+  },
+  "urls": {
+    "website": "https://helloverbatim.com",
+    "chrome_web_store": "https://chromewebstore.google.com/detail/verbatim-adversarial-revi/akpekpepgbklddakfggafgookijegeab"
+  },
+  "context_files": {
+    "brand": "context/brand.md",
+    "product": "context/product.md",
+    "audience": "context/audience.md",
+    "offer": "context/offer.md",
+    "voice": "context/voice.md",
+    "tracking": "context/tracking.md"
+  },
+  "active_campaign": {
+    "campaign_id": "suspiciously-polished-2026-07",
+    "config": "campaigns/suspiciously-polished-2026-07/campaign.config.json",
+    "workspace_status": "launch_ready_pending_delivery_confirmation"
+  },
+  "operating_rules": [
+    "Repo documents are the durable source of truth.",
+    "Arun approves customer-facing actions.",
+    "Do not automate Meta changes in v0.1.",
+    "Do not build a full warehouse or autonomous runtime in this phase.",
+    "Use growth-agents for GTM infrastructure and ai-highlighter for Verbatim product or website changes."
+  ],
+  "source_precedence": [
+    "Arun's explicit current decision",
+    "clients/verbatim/client.config.json and the active campaign workspace",
+    "dated status, roadmap, launch, and decision records",
+    "legacy root documents for historical context only"
+  ],
+  "known_stale_legacy_sections": {
+    "files": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "VERBATIM-CONTEXT.md",
+      "SETUP.md",
+      "WEEKEND-PLAN.md",
+      "ARCHITECTURE.md",
+      "CODEX.md"
+    ],
+    "warning": "Several legacy files still describe the consultant campaign or early creative-generator task as current. They must not override this workspace."
+  }
+}
