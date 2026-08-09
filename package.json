@@ -45,7 +45,9 @@
     "consultant:paid-ads-reprocess-captures": "tsx scripts/reprocess-paid-ads-captures.ts",
     "agent:paid-ads": "tsx scripts/run-paid-ads-agent.ts",
     "consultant:paid-ads-meta-monitoring": "tsx scripts/ingest-meta-campaign-monitoring.ts",
-    "consultant:paid-ads-daily-report": "tsx scripts/generate-paid-ads-daily-operator-report.ts"
+    "consultant:paid-ads-daily-report": "tsx scripts/generate-paid-ads-daily-operator-report.ts",
+    "paid-ads:operator-report": "tsx scripts/generate-paid-ads-operator-report.ts",
+    "paid-ads:comparative-report": "tsx scripts/generate-paid-ads-comparative-report.ts"
   },
   "keywords": [],
   "author": "",
