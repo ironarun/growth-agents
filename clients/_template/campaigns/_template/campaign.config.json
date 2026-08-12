@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "campaign-slug",
+  "client_id": "client-slug",
+  "name": "Campaign Name",
+  "channel": "channel-name",
+  "source_state_as_of": "YYYY-MM-DD",
+  "workspace_generated_on": "YYYY-MM-DD",
+  "status": {
+    "workspace_state": "draft",
+    "delivery": "not_started",
+    "live_spend": "not_started"
+  },
+  "objective": "Campaign objective",
+  "purpose": "Why this campaign exists.",
+  "hypothesis": "What this campaign is testing.",
+  "audience": {
+    "description": "Audience description.",
+    "geography": [],
+    "targeting": "Targeting notes.",
+    "device": [],
+    "placements": []
+  },
+  "landing_page": {
+    "url": "https://example.com/campaign",
+    "route": "/campaign",
+    "implementation_repo": "product-repo-name"
+  },
+  "conversion_event": {
+    "name": "conversion_event_name",
+    "meaning": "What the event means and does not mean."
+  },
+  "documents": {
+    "brief": "campaign-brief.md",
+    "landing_page": "landing-page.md",
+    "ads": "ads.md",
+    "tracking_checklist": "tracking-checklist.md",
+    "launch_report": "launch-report.md",
+    "decision_log": "decision-log.md"
+  }
+}
