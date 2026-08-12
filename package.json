@@ -49,7 +49,8 @@
     "paid-ads:meta-monitoring:suspiciously-polished": "tsx scripts/ingest-meta-campaign-monitoring.ts --client verbatim --campaign suspiciously-polished-2026-07",
     "consultant:paid-ads-daily-report": "tsx scripts/generate-paid-ads-daily-operator-report.ts",
     "paid-ads:operator-report": "tsx scripts/generate-paid-ads-operator-report.ts",
-    "paid-ads:comparative-report": "tsx scripts/generate-paid-ads-comparative-report.ts"
+    "paid-ads:comparative-report": "tsx scripts/generate-paid-ads-comparative-report.ts",
+    "validate:client": "tsx scripts/validate-client-workspace.ts"
   },
   "keywords": [],
   "author": "",

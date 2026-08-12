@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "workspace_type": "growth_agents_client_workspace",
+  "client_id": "client-slug",
+  "client_name": "Client Name",
+  "source_state_as_of": "YYYY-MM-DD",
+  "workspace_generated_on": "YYYY-MM-DD",
+  "status": "draft",
+  "positioning": {
+    "one_line": "One-line positioning goes here.",
+    "promise": "Core customer promise goes here.",
+    "current_acquisition_wedge": "Primary GTM wedge goes here."
+  },
+  "repositories": {
+    "gtm_infrastructure": {
+      "name": "growth-agents",
+      "responsibility": "GTM context, campaigns, reports, and decision records."
+    },
+    "product": {
+      "name": "product-repo-name",
+      "responsibility": "Product, website, app, funnel instrumentation, and production changes."
+    }
+  },
+  "urls": {
+    "website": "https://example.com"
+  },
+  "context_files": {
+    "brand": "context/brand.md",
+    "product": "context/product.md",
+    "audience": "context/audience.md",
+    "offer": "context/offer.md",
+    "voice": "context/voice.md",
+    "tracking": "context/tracking.md"
+  },
+  "active_campaign": {
+    "campaign_id": "campaign-slug",
+    "config": "campaigns/campaign-slug/campaign.config.json",
+    "workspace_status": "draft"
+  },
+  "operating_rules": [
+    "Human approval is required before customer-facing actions.",
+    "Product repos remain separate from Growth Agents.",
+    "Do not commit secrets."
+  ]
+}
