@@ -1,6 +1,7 @@
 import "dotenv/config";
 import fetch from "node-fetch";
-import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 type MetaInsightAction = {
@@ -94,16 +95,58 @@ type Recommendation = {
   optimizationActionsAllowed: false;
 };
 
-const requiredEnv = [
-  "META_ACCESS_TOKEN",
-  "META_AD_ACCOUNT_ID",
-  "META_CAMPAIGN_ID",
-  "META_ADSET_ID",
-  "META_AD_IDS",
-  "META_PIXEL_ID",
-  "META_CUSTOM_CONVERSION_NAME",
-  "META_CUSTOM_CONVERSION_ID",
-];
+type ClientConfig = {
+  client_id: string;
+  client_name: string;
+};
+
+type CampaignConfig = {
+  campaign_id: string;
+  client_id: string;
+  name: string;
+  meta?: {
+    campaign_name?: string;
+    ad_set_name?: string;
+    pixel_id?: string;
+    custom_conversion_name?: string;
+    source_event?: string;
+  };
+  conversion_event?: {
+    name?: string;
+  };
+  landing_page?: {
+    url?: string;
+  };
+  ads?: Array<{
+    meta_name: string;
+  }>;
+};
+
+type CliArgs = {
+  client: string;
+  campaign: string | null;
+};
+
+type MonitoringConfig = {
+  clientConfig: ClientConfig | null;
+  campaignConfig: CampaignConfig | null;
+  campaignSlug: string | null;
+  token: string;
+  adAccountId: string;
+  campaignId: string | null;
+  adsetId: string | null;
+  adIds: string[];
+  pixelId: string;
+  customConversionName: string;
+  customConversionId: string;
+  customEventName: string;
+  version: string;
+  since: string;
+  until: string;
+  outputDir: string;
+};
+
+const defaultClient = "verbatim";
 
 const humanChangeLog = [
   {
@@ -115,14 +158,132 @@ const humanChangeLog = [
 
 const placementChangeDate = "2026-07-10";
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
+function fail(message: string): never {
+  throw new Error(message);
+}
 
-  if (!value || value.trim().length === 0) {
-    throw new Error(`Missing required env var: ${name}`);
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {
+    client: defaultClient,
+    campaign: null,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    const next = argv[index + 1];
+
+    if (arg === "--client") {
+      if (!next) fail("Missing value for --client.");
+      args.client = next;
+      index += 1;
+    } else if (arg === "--campaign") {
+      if (!next) fail("Missing value for --campaign.");
+      args.campaign = next;
+      index += 1;
+    }
   }
 
+  return args;
+}
+
+async function readJson<T>(filePath: string): Promise<T> {
+  if (!existsSync(filePath)) {
+    fail(`Missing required file: ${filePath}`);
+  }
+
+  return JSON.parse(await readFile(filePath, "utf-8")) as T;
+}
+
+function campaignEnvPrefix(campaignSlug: string | null): string | null {
+  if (!campaignSlug) return null;
+  return campaignSlug.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").toUpperCase();
+}
+
+function envValue(name: string): string | null {
+  const value = process.env[name];
+
+  if (!value || value.trim().length === 0) return null;
   return value.trim();
+}
+
+function optionalEnv(names: string[]): string | null {
+  for (const name of names) {
+    const value = envValue(name);
+    if (value) return value;
+  }
+
+  return null;
+}
+
+function requireConfigValue(label: string, value: string | null, envNames: string[]): string {
+  if (value) return value;
+
+  throw new Error(
+    `Missing required ${label}. Set one of these env vars: ${envNames.join(", ")}.`,
+  );
+}
+
+function envNames(prefix: string | null, suffix: string, includeGeneric = true): string[] {
+  if (!prefix) return [`META_${suffix}`];
+  return includeGeneric ? [`META_${prefix}_${suffix}`, `META_${suffix}`] : [`META_${prefix}_${suffix}`];
+}
+
+async function loadMonitoringConfig(args: CliArgs): Promise<MonitoringConfig> {
+  const clientRoot = path.join("clients", args.client);
+  const prefix = campaignEnvPrefix(args.campaign);
+  const clientConfig = existsSync(path.join(clientRoot, "client.config.json"))
+    ? await readJson<ClientConfig>(path.join(clientRoot, "client.config.json"))
+    : null;
+  const campaignConfig =
+    args.campaign && existsSync(path.join(clientRoot, "campaigns", args.campaign, "campaign.config.json"))
+      ? await readJson<CampaignConfig>(path.join(clientRoot, "campaigns", args.campaign, "campaign.config.json"))
+      : null;
+
+  const accessTokenNames = ["META_ACCESS_TOKEN"];
+  const useGenericCampaignEnv = args.campaign === null;
+  const adAccountNames = envNames(prefix, "AD_ACCOUNT_ID");
+  const campaignIdNames = envNames(prefix, "CAMPAIGN_ID", useGenericCampaignEnv);
+  const adsetIdNames = envNames(prefix, "ADSET_ID", useGenericCampaignEnv);
+  const adIdsNames = envNames(prefix, "AD_IDS", useGenericCampaignEnv);
+  const pixelIdNames = envNames(prefix, "PIXEL_ID");
+  const customConversionNameNames = envNames(prefix, "CUSTOM_CONVERSION_NAME", useGenericCampaignEnv);
+  const customConversionIdNames = envNames(prefix, "CUSTOM_CONVERSION_ID", useGenericCampaignEnv);
+  const customEventNameNames = envNames(prefix, "CUSTOM_EVENT_NAME", useGenericCampaignEnv);
+
+  const adIdsValue = optionalEnv(adIdsNames);
+  const adIds = adIdsValue
+    ? adIdsValue
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+    : [];
+
+  return {
+    clientConfig,
+    campaignConfig,
+    campaignSlug: args.campaign,
+    token: requireConfigValue("Meta access token", optionalEnv(accessTokenNames), accessTokenNames),
+    adAccountId: requireConfigValue("Meta ad account ID", optionalEnv(adAccountNames), adAccountNames),
+    campaignId: optionalEnv(campaignIdNames),
+    adsetId: optionalEnv(adsetIdNames),
+    adIds,
+    pixelId: requireConfigValue("Meta pixel ID", optionalEnv(pixelIdNames) ?? campaignConfig?.meta?.pixel_id ?? null, pixelIdNames),
+    customConversionName: requireConfigValue(
+      "Meta custom conversion name",
+      optionalEnv(customConversionNameNames) ?? campaignConfig?.meta?.custom_conversion_name ?? null,
+      customConversionNameNames,
+    ),
+    customConversionId: optionalEnv(customConversionIdNames) ?? "",
+    customEventName:
+      optionalEnv(customEventNameNames) ??
+      campaignConfig?.conversion_event?.name ??
+      campaignConfig?.meta?.source_event ??
+      "AddToChromeClick",
+    version: envValue("META_API_VERSION") ?? "v23.0",
+    since: optionalEnv(envNames(prefix, "MONITORING_SINCE")) ?? envValue("META_MONITORING_SINCE") ?? "2026-07-08",
+    until: optionalEnv(envNames(prefix, "MONITORING_UNTIL")) ?? envValue("META_MONITORING_UNTIL") ?? today(),
+    outputDir: envValue("META_MONITORING_OUTPUT_DIR") ?? "data/paid-ads/monitoring",
+  };
 }
 
 function num(value: string | undefined): number {
@@ -154,17 +315,18 @@ function addToChromeActionValue(
   if (!actions) return 0;
 
   const countedActionTypes = new Set<string>();
-  const exactActionTypes = new Set([
-    customEventName,
-    `offsite_conversion.custom.${customConversionId}`,
-    `onsite_conversion.custom.${customConversionId}`,
-  ]);
+  const exactActionTypes = new Set([customEventName]);
+
+  if (customConversionId.trim().length > 0) {
+    exactActionTypes.add(`offsite_conversion.custom.${customConversionId}`);
+    exactActionTypes.add(`onsite_conversion.custom.${customConversionId}`);
+  }
 
   return actions.reduce((sum, action) => {
     const actionType = action.action_type;
     const shouldCount =
       exactActionTypes.has(actionType) ||
-      actionType.includes(customConversionId);
+      (customConversionId.trim().length > 0 && actionType.includes(customConversionId));
 
     if (!shouldCount || countedActionTypes.has(actionType)) {
       return sum;
@@ -184,14 +346,19 @@ function today(): string {
 }
 
 async function metaGet<T>(url: URL): Promise<T> {
-  const response = await fetch(url);
+  try {
+    const response = await fetch(url);
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Meta API error ${response.status}: ${body}`);
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Meta API error ${response.status}: ${redactSecret(body)}`);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Meta API request failed for ${publicUrl(url)}: ${redactSecret(message)}`);
   }
-
-  return (await response.json()) as T;
 }
 
 function graphUrl(version: string, objectPath: string, token: string, params: Record<string, string>): URL {
@@ -210,6 +377,115 @@ function publicUrl(url: URL): string {
   const clone = new URL(url.toString());
   clone.searchParams.delete("access_token");
   return clone.toString();
+}
+
+function redactSecret(value: string): string {
+  return value.replace(/access_token=[^&\s"]+/g, "access_token=[REDACTED]");
+}
+
+async function resolveMetaObjectIds(config: MonitoringConfig): Promise<{
+  campaignId: string;
+  adsetId: string;
+  adIds: string[];
+}> {
+  const campaignId = config.campaignId ?? (await discoverCampaignId(config));
+  const adsetId = config.adsetId ?? (await discoverAdsetId(config, campaignId));
+  const adIds = config.adIds.length > 0 ? config.adIds : await discoverAdIds(config, adsetId);
+
+  if (adIds.length === 0) {
+    fail("No Meta ad IDs were found. Set campaign-specific META_<CAMPAIGN>_AD_IDS or verify the campaign workspace ad names.");
+  }
+
+  return {
+    campaignId,
+    adsetId,
+    adIds,
+  };
+}
+
+async function discoverCampaignId(config: MonitoringConfig): Promise<string> {
+  if (!config.campaignConfig) {
+    fail("Missing Meta campaign ID. Set META_CAMPAIGN_ID or pass --campaign with a campaign workspace.");
+  }
+
+  const campaignsUrl = graphUrl(config.version, `act_${config.adAccountId}/campaigns`, config.token, {
+    fields: "id,name,status,effective_status,configured_status,objective,buying_type,start_time,stop_time",
+    limit: "100",
+  });
+  const campaigns = await metaGet<MetaListResponse<MetaObject>>(campaignsUrl);
+  const found = campaigns.data.find((campaign) => String(campaign.name ?? "") === config.campaignConfig?.name);
+
+  if (!found?.id) {
+    fail(`Could not discover Meta campaign ID by name: ${config.campaignConfig.name}. Set META_${campaignEnvPrefix(config.campaignSlug) ?? "CAMPAIGN"}_CAMPAIGN_ID.`);
+  }
+
+  return String(found.id);
+}
+
+async function discoverAdsetId(config: MonitoringConfig, campaignId: string): Promise<string> {
+  const expectedAdsetName = config.campaignConfig?.meta?.ad_set_name;
+
+  if (!expectedAdsetName) {
+    fail("Missing Meta ad set ID and campaign workspace ad set name. Set a campaign-specific META_<CAMPAIGN>_ADSET_ID.");
+  }
+
+  const adsetsUrl = graphUrl(config.version, `${campaignId}/adsets`, config.token, {
+    fields: "id,name,status,effective_status,configured_status,daily_budget,start_time,end_time,billing_event,optimization_goal,bid_strategy",
+    limit: "100",
+  });
+  const adsets = await metaGet<MetaListResponse<MetaObject>>(adsetsUrl);
+  const found = adsets.data.find((adset) => String(adset.name ?? "") === expectedAdsetName);
+
+  if (!found?.id) {
+    fail(`Could not discover Meta ad set ID by name: ${expectedAdsetName}. Set META_${campaignEnvPrefix(config.campaignSlug) ?? "CAMPAIGN"}_ADSET_ID.`);
+  }
+
+  return String(found.id);
+}
+
+async function discoverAdIds(config: MonitoringConfig, adsetId: string): Promise<string[]> {
+  const expectedAdNames = new Set((config.campaignConfig?.ads ?? []).map((ad) => ad.meta_name));
+
+  if (expectedAdNames.size === 0) {
+    fail("Missing Meta ad IDs and campaign workspace ad names. Set campaign-specific META_<CAMPAIGN>_AD_IDS.");
+  }
+
+  const adsUrl = graphUrl(config.version, `${adsetId}/ads`, config.token, {
+    fields: "id,name,status,effective_status,configured_status",
+    limit: "100",
+  });
+  const ads = await metaGet<MetaListResponse<MetaObject>>(adsUrl);
+  const found = ads.data
+    .filter((ad) => expectedAdNames.has(String(ad.name ?? "")))
+    .map((ad) => String(ad.id ?? ""))
+    .filter(Boolean);
+
+  if (found.length === 0) {
+    fail(`Could not discover Meta ad IDs by configured ad names: ${[...expectedAdNames].join(", ")}. Set META_${campaignEnvPrefix(config.campaignSlug) ?? "CAMPAIGN"}_AD_IDS.`);
+  }
+
+  return found;
+}
+
+async function resolveCustomConversionId(config: MonitoringConfig): Promise<string> {
+  if (config.customConversionId.trim().length > 0) {
+    return config.customConversionId;
+  }
+
+  const customConversionsUrl = graphUrl(config.version, `act_${config.adAccountId}/customconversions`, config.token, {
+    fields: "id,name,custom_event_type,event_source_type",
+    limit: "100",
+  });
+  const customConversions = await metaGet<MetaListResponse<MetaObject>>(customConversionsUrl);
+  const found = customConversions.data.find(
+    (conversion) => String(conversion.name ?? "") === config.customConversionName,
+  );
+
+  if (!found?.id) {
+    return "";
+  }
+
+  return String(found.id);
 }
 
 function markdownTable(rows: Array<Record<string, string | number>>): string {
@@ -438,27 +714,24 @@ function buildRecommendation(
 }
 
 async function main() {
-  for (const name of requiredEnv) {
-    requireEnv(name);
-  }
+  const args = parseArgs(process.argv.slice(2));
+  const config = await loadMonitoringConfig(args);
+  const resolvedIds = await resolveMetaObjectIds(config);
 
-  const token = requireEnv("META_ACCESS_TOKEN");
-  const adAccountId = requireEnv("META_AD_ACCOUNT_ID");
-  const campaignId = requireEnv("META_CAMPAIGN_ID");
-  const adsetId = requireEnv("META_ADSET_ID");
-  const adIds = requireEnv("META_AD_IDS")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-  const pixelId = requireEnv("META_PIXEL_ID");
-  const customConversionName = requireEnv("META_CUSTOM_CONVERSION_NAME");
-  const customConversionId = requireEnv("META_CUSTOM_CONVERSION_ID");
-  const customEventName = process.env.META_CUSTOM_EVENT_NAME?.trim() || "AddToChromeClick";
+  const token = config.token;
+  const adAccountId = config.adAccountId;
+  const campaignId = resolvedIds.campaignId;
+  const adsetId = resolvedIds.adsetId;
+  const adIds = resolvedIds.adIds;
+  const pixelId = config.pixelId;
+  const customConversionName = config.customConversionName;
+  const customConversionId = await resolveCustomConversionId(config);
+  const customEventName = config.customEventName;
 
-  const version = process.env.META_API_VERSION?.trim() || "v23.0";
-  const since = process.env.META_MONITORING_SINCE?.trim() || "2026-07-08";
-  const until = process.env.META_MONITORING_UNTIL?.trim() || today();
-  const outputDir = process.env.META_MONITORING_OUTPUT_DIR?.trim() || "data/paid-ads/monitoring";
+  const version = config.version;
+  const since = config.since;
+  const until = config.until;
+  const outputDir = config.outputDir;
 
   const runStamp = isoStamp();
 
@@ -542,9 +815,43 @@ async function main() {
   );
 
   const recommendation = buildRecommendation(totals, normalizedAds, groupedPlacements);
+  const campaignHumanChangeLog = config.campaignSlug === "suspiciously-polished-2026-07" ? [] : humanChangeLog;
+  const reportingNotes =
+    campaignHumanChangeLog.length > 0
+      ? {
+          placementChangeDate,
+          preChangeData:
+            "Rows ending before 2026-07-10 are pre-change data and may include placements removed by the manual correction.",
+          changeDayData:
+            "Rows dated 2026-07-10 are mixed unless a narrower hourly export is used. Treat them as transition-day data.",
+          postChangeData:
+            "Rows starting after 2026-07-10 are post-change data when available and should reflect the Facebook Feed-only correction.",
+        }
+      : {
+          placementChangeDate: null,
+          preChangeData: "No placement change log is configured for this campaign.",
+          changeDayData: "No placement change log is configured for this campaign.",
+          postChangeData: "No placement change log is configured for this campaign.",
+        };
 
   const summary = {
     generatedAt: new Date().toISOString(),
+    client: config.clientConfig
+      ? {
+          clientName: config.clientConfig.client_name,
+          clientSlug: config.clientConfig.client_id,
+          landingPageUrl: config.campaignConfig?.landing_page?.url ?? null,
+        }
+      : undefined,
+    campaignWorkspace: config.campaignConfig
+      ? {
+          campaignId: config.campaignConfig.campaign_id,
+          campaignName: config.campaignConfig.name,
+          campaignConfigPath: config.campaignSlug
+            ? path.join("clients", args.client, "campaigns", config.campaignSlug, "campaign.config.json")
+            : null,
+        }
+      : undefined,
     since,
     until,
     account: {
@@ -557,16 +864,8 @@ async function main() {
     campaign,
     adset,
     ads,
-    humanChangeLog,
-    reportingNotes: {
-      placementChangeDate,
-      preChangeData:
-        "Rows ending before 2026-07-10 are pre-change data and may include placements removed by the manual correction.",
-      changeDayData:
-        "Rows dated 2026-07-10 are mixed unless a narrower hourly export is used. Treat them as transition-day data.",
-      postChangeData:
-        "Rows starting after 2026-07-10 are post-change data when available and should reflect the Facebook Feed-only correction.",
-    },
+    humanChangeLog: campaignHumanChangeLog,
+    reportingNotes,
     totals,
     adPerformance: normalizedAds,
     placementPerformance,
@@ -664,13 +963,13 @@ ${markdownTable(placementRows)}
 
 ## Human change log
 
-${humanChangeLog.map((entry) => `- ${entry.timestampEt}: ${entry.change}`).join("\n")}
+${campaignHumanChangeLog.length > 0 ? campaignHumanChangeLog.map((entry) => `- ${entry.timestampEt}: ${entry.change}`).join("\n") : "- No human change log entry is configured for this campaign."}
 
 ## Pre-change and post-change read
 
-- Pre-change data: rows ending before ${placementChangeDate}. These may include placements removed by the manual correction.
-- Change-day data: rows dated ${placementChangeDate}. Daily Meta insights can mix pre-change and post-change delivery unless a narrower export is used.
-- Post-change data: rows starting after ${placementChangeDate}. These should reflect the Facebook Feed-only correction when available.
+- Pre-change data: ${reportingNotes.preChangeData}
+- Change-day data: ${reportingNotes.changeDayData}
+- Post-change data: ${reportingNotes.postChangeData}
 
 ## Read
 
