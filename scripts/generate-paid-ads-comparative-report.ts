@@ -297,7 +297,7 @@ function buildSuspiciousComparison(args: {
   const totals = args.summaryMatch?.summary.totals ?? null;
   const localDataFound = args.summaryMatch !== null;
   const installsNote = localDataFound
-    ? "Install/download count is not included in the local Meta monitoring summary unless explicitly recorded elsewhere."
+    ? "Install/download count is not included in the local Meta monitoring summary unless explicitly recorded elsewhere. AddToChromeClick is intent, not confirmed install."
     : "Operator context says the campaign produced some downloads/installs, but exact counts are not available locally.";
   const activationNote = localDataFound
     ? "Activation/customer count is not available in the local Meta monitoring summary."
@@ -328,7 +328,9 @@ function buildSuspiciousComparison(args: {
     },
     primary_failure_point: "Install/download to activation.",
     diagnosis:
-      "Suspiciously Polished appears to move the failure later in the funnel. The campaign reportedly produced downloads or installs, but those did not become active usage or customers. Exact live metrics are not available in local monitoring data.",
+      localDataFound
+        ? "Suspiciously Polished has local Meta delivery and click-intent metrics. Confirmed installs, activation, and customers are still not normalized locally."
+        : "Suspiciously Polished appears to move the failure later in the funnel. The campaign reportedly produced downloads or installs, but those did not become active usage or customers. Exact live metrics are not available in local monitoring data.",
   };
 }
 
@@ -359,7 +361,10 @@ function recommendation(consultant: CampaignComparison, suspicious: CampaignComp
     "Do not build Meta automation or automatic optimization from this comparison.",
   ];
 
-  if (suspicious.metrics.installs_or_downloads_note.includes("produced some downloads/installs")) {
+  if (
+    suspicious.metrics.installs_or_downloads_note.includes("produced some downloads/installs") ||
+    suspicious.primary_failure_point.includes("activation")
+  ) {
     recommendations.unshift("Investigate activation and onboarding before producing more creative volume.");
   }
 
@@ -389,6 +394,7 @@ function buildMarkdown(args: {
   outputJsonPath: string;
 }): string {
   const recommendations = recommendation(args.consultant, args.suspicious);
+  const suspiciousDataFound = args.suspicious.local_data_status === "found";
 
   return [
     "# Comparative Paid Ads Report v0.3",
@@ -400,7 +406,9 @@ function buildMarkdown(args: {
     "",
     "- The consultant campaign failed before install intent: spend created outbound clicks and a small number of landing page views, but no AddToChromeClick events or new users.",
     "- The Suspiciously Polished campaign appears to have moved the failure later: operator context says it produced some downloads or installs, but those did not become active usage or customers.",
-    "- Local normalized Meta data for Suspiciously Polished was not found unless explicitly noted below, so this report uses placeholders for live campaign metrics rather than mixing in consultant data.",
+    suspiciousDataFound
+      ? "- Local normalized Meta data for Suspiciously Polished was found and is used in the comparison table."
+      : "- Local normalized Meta data for Suspiciously Polished was not found, so this report uses placeholders for live campaign metrics rather than mixing in consultant data.",
     "- The next work should be activation and onboarding diagnosis, followed by a clearer plain-language creative test if tracking confirms the same confusion.",
     "",
     "## Campaign Comparison Table",
@@ -418,7 +426,9 @@ function buildMarkdown(args: {
     "### Suspiciously Polished campaign",
     "",
     `- Local monitoring source: ${args.suspicious.monitoring_source_path ?? "not found"}`,
-    "- Operator context: some downloads or installs occurred, but active usage and customers did not follow.",
+    suspiciousDataFound
+      ? "- Local Meta data is available for delivery, clicks, landing page views, and AddToChromeClick intent."
+      : "- Operator context: some downloads or installs occurred, but active usage and customers did not follow.",
     "- Interpretation: this is likely a later-stage funnel failure, from install/download to activation, not purely an ad click failure.",
     "",
     "## Campaign 1: Consultant Campaign Diagnosis",
@@ -431,7 +441,9 @@ function buildMarkdown(args: {
     "",
     args.suspicious.diagnosis,
     "",
-    "Suspiciously Polished is not cleanly comparable until exact spend, impressions, clicks, PageViews, AddToChromeClick events, installs, and activation are attached locally. The reported install/download signal means it should not be declared the same failure as the consultant campaign.",
+    suspiciousDataFound
+      ? "Suspiciously Polished is now comparable through the AddToChromeClick intent stage. It still is not comparable through confirmed install, activation, retention, or customer stages because those fields are not normalized locally."
+      : "Suspiciously Polished is not cleanly comparable until exact spend, impressions, clicks, PageViews, AddToChromeClick events, installs, and activation are attached locally. The reported install/download signal means it should not be declared the same failure as the consultant campaign.",
     "",
     "## Where Each Campaign Failed",
     "",
@@ -456,7 +468,9 @@ function buildMarkdown(args: {
     "",
     "## Tracking Gaps",
     "",
-    "- Suspiciously Polished live Meta metrics were not found in the local normalized monitoring summaries unless the data availability section says otherwise.",
+    suspiciousDataFound
+      ? "- Suspiciously Polished live Meta delivery metrics were found locally."
+      : "- Suspiciously Polished live Meta metrics were not found in the local normalized monitoring summaries.",
     "- Install/download counts are not locally normalized in this report.",
     "- Activated users and customers are not locally normalized in this report.",
     "- AddToChromeClick remains an intent event, not a confirmed install.",

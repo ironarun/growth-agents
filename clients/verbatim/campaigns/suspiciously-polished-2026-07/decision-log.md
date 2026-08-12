@@ -111,3 +111,21 @@ Do not build yet:
 - second repo
 
 The next implementation after this workspace is Paid Ads Operator Report v0.2.
+
+## 2026-08-12: Close out Suspiciously Polished
+
+**Decision:** Close the campaign as ended and commercially failed.
+
+**Final metrics:** $128.99 spend, 9,537 impressions, 100 outbound clicks, 118 landing page views, 11 AddToChromeClick events, and $11.73 cost per AddToChromeClick.
+
+**Creative split:** Female creative spent $91.89 for 78 outbound clicks, 90 landing page views, and 8 AddToChromeClick events. Male creative spent $37.10 for 22 outbound clicks, 28 landing page views, and 3 AddToChromeClick events.
+
+**Infrastructure result:** Useful reporting loop produced. The campaign now has read-only Meta monitoring, normalized summaries, operator reporting, and comparative reporting against the consultant campaign.
+
+**Funnel diagnosis:** The consultant campaign failed before AddToChrome intent. Suspiciously Polished produced AddToChrome intent but failed after that.
+
+**Primary failure point:** Install/download to activation.
+
+**Hold rule:** Do not run another paid campaign until Chrome install onboarding and activation tracking improve.
+
+**Next required instrumentation:** confirmed install, extension opened, V button clicked, Debate started, Debate completed, retained usage, and customer/subscription signal.
