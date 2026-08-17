@@ -73,6 +73,12 @@ A missing comparison never fails the run. The comparative stage is recorded as `
 
 The runner does not manufacture a comparison from incompatible data.
 
+## Campaign identity
+
+The `normalized_summary` stage verifies that the summary belongs to the requested campaign by comparing `campaignWorkspace.campaignId` in the summary with `campaign_id` in `campaign.config.json`. Display names are never used for this check, so renaming a campaign in Meta does not fail a run. A different `campaignWorkspace.campaignId` fails the run, and so does a summary that records no `campaignWorkspace.campaignId` at all, since identity cannot be verified. Regenerate such a summary with `--campaign <campaign-id>`.
+
+This check is separate from source-data freshness: an identity mismatch fails, whereas missing timestamps only mark freshness `unknown`.
+
 ## Source-data freshness
 
 `source_data_as_of` in the manifest comes from the normalized monitoring summary, not from the moment the run started:

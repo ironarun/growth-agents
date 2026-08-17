@@ -18,6 +18,7 @@ import {
 const client = "verbatim";
 const campaign = "suspiciously-polished-2026-07";
 const campaignName = "Verbatim First Flight - Suspiciously Polished - Consumer - 2026-07";
+const priorCampaign = "consultants-client-facing-ai-review-v1";
 const priorCampaignName = "Verbatim First Flight - Consultants - 2026-07";
 const accessToken = "EAAG-super-secret-meta-token-value";
 
@@ -38,6 +39,8 @@ async function createWorkspace(options?: {
   campaignClientId?: string;
   withPriorCampaignSummary?: boolean;
   withCampaignSummary?: boolean;
+  summaryCampaignId?: string | null;
+  summaryCampaignName?: string;
 }): Promise<string> {
   const repoRoot = await mkdtemp(path.join(tmpdir(), "operator-runner-"));
   const clientId = options?.clientId ?? client;
@@ -58,24 +61,44 @@ async function createWorkspace(options?: {
   );
 
   if (options?.withCampaignSummary ?? true) {
-    await writeCampaignSummary(repoRoot, "meta-monitoring-summary-2026-07-25.json", campaignName);
+    await writeCampaignSummary(repoRoot, "meta-monitoring-summary-2026-07-25.json", {
+      workspaceCampaignId:
+        options && "summaryCampaignId" in options ? options.summaryCampaignId : campaignId,
+      name: options?.summaryCampaignName ?? campaignName,
+    });
   }
 
   if (options?.withPriorCampaignSummary) {
-    await writeCampaignSummary(repoRoot, "meta-monitoring-summary-2026-07-20.json", priorCampaignName);
+    await writeCampaignSummary(repoRoot, "meta-monitoring-summary-2026-07-20.json", {
+      workspaceCampaignId: priorCampaign,
+      name: priorCampaignName,
+    });
   }
 
   return repoRoot;
 }
 
-async function writeCampaignSummary(repoRoot: string, fileName: string, name: string): Promise<string> {
+async function writeCampaignSummary(
+  repoRoot: string,
+  fileName: string,
+  identity: { workspaceCampaignId?: string | null; name: string },
+): Promise<string> {
   const relativePath = path.join(normalizedMonitoringDir, fileName);
+  const workspaceCampaignId = identity.workspaceCampaignId;
 
   await writeJson(path.join(repoRoot, relativePath), {
     generatedAt: "2026-07-25T09:00:00.000Z",
     since: "2026-07-08",
     until: "2026-07-24",
-    campaign: { id: "6962618508954", name },
+    ...(workspaceCampaignId
+      ? {
+          campaignWorkspace: {
+            campaignId: workspaceCampaignId,
+            campaignName: identity.name,
+          },
+        }
+      : {}),
+    campaign: { id: "6962618508954", name: identity.name },
     totals: { spend: 12.34 },
   });
 
@@ -310,6 +333,57 @@ test("skips the comparative stage when no comparison data exists", async () => {
   assert.equal(manifest.outputs.comparative_report_markdown, null);
   assert.equal(calls.includes("comparative_report"), false);
   assert.equal(manifest.warnings.length, 1);
+});
+
+test("accepts a summary whose display name differs from the workspace name", async () => {
+  const repoRoot = await createWorkspace({
+    summaryCampaignName: "Verbatim First Flight - Suspiciously Polished - Consumer - 2026-07 (renamed in Meta)",
+    withPriorCampaignSummary: true,
+  });
+  const { exitCode, manifest } = await run(repoRoot);
+
+  assert.equal(exitCode, 0);
+  assert.equal(manifest.status, "succeeded");
+  assert.equal(stage(manifest, "normalized_summary").status, "succeeded");
+});
+
+test("fails when the summary carries a different stable campaign identifier", async () => {
+  const repoRoot = await createWorkspace({ summaryCampaignId: priorCampaign });
+  const { exitCode, manifest } = await run(repoRoot);
+
+  assert.equal(exitCode, 1);
+  assert.equal(stage(manifest, "normalized_summary").status, "failed");
+  assert.match(
+    String(stage(manifest, "normalized_summary").error),
+    new RegExp(`belongs to campaign ${priorCampaign}`),
+  );
+});
+
+test("fails when display names match but stable identifiers differ", async () => {
+  const repoRoot = await createWorkspace({
+    summaryCampaignId: priorCampaign,
+    summaryCampaignName: campaignName,
+  });
+  const { exitCode, manifest } = await run(repoRoot);
+
+  assert.equal(exitCode, 1);
+  assert.equal(stage(manifest, "normalized_summary").status, "failed");
+  assert.match(
+    String(stage(manifest, "normalized_summary").error),
+    new RegExp(`not the requested campaign ${campaign}`),
+  );
+});
+
+test("fails when the summary carries no stable campaign identifier", async () => {
+  const repoRoot = await createWorkspace({ summaryCampaignId: null });
+  const { exitCode, manifest } = await run(repoRoot);
+
+  assert.equal(exitCode, 1);
+  assert.equal(stage(manifest, "normalized_summary").status, "failed");
+  assert.match(
+    String(stage(manifest, "normalized_summary").error),
+    /does not record a campaignWorkspace\.campaignId/,
+  );
 });
 
 test("does not write secrets into the manifest", async () => {

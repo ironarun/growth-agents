@@ -107,11 +107,17 @@ type MonitoringSummary = {
   generatedAt?: string;
   since?: string;
   until?: string;
+  campaignWorkspace?: {
+    campaignId?: unknown;
+    campaignName?: unknown;
+  };
   campaign?: {
     id?: unknown;
     name?: unknown;
   };
 };
+
+export type CampaignIdentityMatch = "match" | "mismatch" | "unverifiable";
 
 type CampaignConfig = {
   campaign_id?: string;
@@ -157,14 +163,28 @@ export function parseLabeledPath(stdout: string, label: string): string | null {
   return null;
 }
 
-function summaryMatchesCampaign(summary: MonitoringSummary, campaign: CampaignConfig): boolean {
-  const summaryName = String(summary.campaign?.name ?? "");
-  const summaryId = String(summary.campaign?.id ?? "");
+function stableString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
 
-  return (
-    (campaign.name !== undefined && summaryName === campaign.name) ||
-    (campaign.campaign_id !== undefined && summaryId === campaign.campaign_id)
-  );
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * Campaign identity comes from the workspace campaign ID that Meta monitoring
+ * copies into the summary, never from the human-readable campaign name.
+ * "unverifiable" means one of the two records carries no stable identifier.
+ */
+export function compareSummaryCampaign(
+  summary: MonitoringSummary,
+  campaign: CampaignConfig,
+): CampaignIdentityMatch {
+  const summaryCampaignId = stableString(summary.campaignWorkspace?.campaignId);
+  const configCampaignId = stableString(campaign.campaign_id);
+
+  if (summaryCampaignId === null || configCampaignId === null) return "unverifiable";
+
+  return summaryCampaignId === configCampaignId ? "match" : "mismatch";
 }
 
 async function readJsonFile<T>(filePath: string): Promise<T> {
@@ -196,7 +216,7 @@ async function findLatestMatchingSummary(
   for (const relativePath of await listNormalizedSummaries(repoRoot)) {
     try {
       const summary = await readJsonFile<MonitoringSummary>(path.join(repoRoot, relativePath));
-      if (summaryMatchesCampaign(summary, campaign)) return relativePath;
+      if (compareSummaryCampaign(summary, campaign) === "match") return relativePath;
     } catch {
       continue;
     }
@@ -209,7 +229,7 @@ async function hasComparisonData(repoRoot: string, campaign: CampaignConfig): Pr
   for (const relativePath of await listNormalizedSummaries(repoRoot)) {
     try {
       const summary = await readJsonFile<MonitoringSummary>(path.join(repoRoot, relativePath));
-      if (!summaryMatchesCampaign(summary, campaign)) return true;
+      if (compareSummaryCampaign(summary, campaign) === "mismatch") return true;
     } catch {
       continue;
     }
@@ -439,9 +459,19 @@ export async function runPaidAdsOperator(
 
     const summary = await readJsonFile<MonitoringSummary>(path.join(repoRoot, summaryPath));
 
-    if (!summaryMatchesCampaign(summary, campaignConfig)) {
+    const identityMatch = compareSummaryCampaign(summary, campaignConfig);
+
+    if (identityMatch === "unverifiable") {
       throw new StageFailure(
-        `Normalized summary ${summaryPath} does not match campaign ${options.campaign}.`,
+        `Normalized summary ${summaryPath} does not record a campaignWorkspace.campaignId, so it cannot be verified against campaign ${options.campaign}. Regenerate it with --campaign ${options.campaign}.`,
+      );
+    }
+
+    if (identityMatch === "mismatch") {
+      throw new StageFailure(
+        `Normalized summary ${summaryPath} belongs to campaign ${String(
+          summary.campaignWorkspace?.campaignId,
+        )}, not the requested campaign ${options.campaign}.`,
       );
     }
 
