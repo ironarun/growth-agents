@@ -8,7 +8,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --import tsx --test tests/*.test.ts",
     "generate:creative": "tsx agents/paid-ads/skills/creative-generator/index.ts",
     "scout:conversations": "tsx agents/conversation-scout/index.ts",
     "creative:from-pain-memory": "tsx agents/paid-ads/skills/creative-generator/from-pain-memory.ts",
@@ -50,6 +50,8 @@
     "consultant:paid-ads-daily-report": "tsx scripts/generate-paid-ads-daily-operator-report.ts",
     "paid-ads:operator-report": "tsx scripts/generate-paid-ads-operator-report.ts",
     "paid-ads:comparative-report": "tsx scripts/generate-paid-ads-comparative-report.ts",
+    "operator": "tsx scripts/run-paid-ads-operator.ts",
+    "paid-ads:operator-run": "tsx scripts/run-paid-ads-operator.ts",
     "validate:client": "tsx scripts/validate-client-workspace.ts"
   },
   "keywords": [],

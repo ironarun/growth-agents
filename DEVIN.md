@@ -46,6 +46,16 @@ Verbatim is the first completed client workspace, not the hardcoded model.
 
 Future clients should start from `clients/_template`.
 
+## Paid Ads Operator Runner
+
+One canonical command runs the paid-ads reporting spine end to end and writes a run manifest:
+
+```text
+npm.cmd run operator -- --client {client-slug} --campaign {campaign-slug}
+```
+
+Run manifests are written to `output/run-{timestamp}/run-manifest.json`. See `docs/PAID-ADS-OPERATOR-RUNNER.md`.
+
 ## Human Approval Gates
 
 Human approval is required before:
